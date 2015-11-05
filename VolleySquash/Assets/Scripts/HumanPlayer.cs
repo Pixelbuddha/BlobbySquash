@@ -3,13 +3,16 @@ using System.Collections;
 
 public class HumanPlayer : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-	
+	Controls controls;
+
+	private void Update() {
+		//Get Input
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+
+	/// <summary>
+	/// Foreach Ingame Control in Controls, listen to Input an call according Method
+	/// </summary>
+	private void GetInput() {
+
 	}
 }
