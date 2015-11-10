@@ -11,15 +11,16 @@ public abstract class Controller : MonoBehaviour {
 
 
 	// Use this for initialization
-	void Start () {
+	protected void Start () {
 		//Get Pawn Component
+		pawn = GetComponent<Pawn>();
 	}
 
 	/// <summary>
 	/// Calls Jump() of controlled pawn;
 	/// </summary>
 	protected void Jump() {
-
+		pawn.Jump();
 	}
 
 	/// <summary>
@@ -27,6 +28,6 @@ public abstract class Controller : MonoBehaviour {
 	/// </summary>
 	/// <param name="direction">Direction the pawn shall move to</param>
 	protected void Move(Vector3 direction) {
-
+		pawn.Move(direction);
 	}
 }

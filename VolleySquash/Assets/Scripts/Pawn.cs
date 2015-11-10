@@ -14,8 +14,10 @@ public class Pawn : MonoBehaviour {
 	private Vector3 lastPosition;
 
 	//Move variables
+	[SerializeField]
 	private float acceleration, decceleration;
 	private float curSpeed;
+	[SerializeField]
 	private float maxSpeed;
 	private bool isMoving;
 
@@ -23,26 +25,34 @@ public class Pawn : MonoBehaviour {
 	private float gravity;
 	private float jumpForce;
 	private float curJumpSpeed;
-
-	//Transform variables
-	private Vector3 velocity;
 	
 	// Use this for initialization
 	public void Start () {
 		//Get a controller
+		controller = GetComponent<Controller>();
 		//Get colliders and add to list
+		foreach (Collider collider in GetComponents<Collider>()) {
+			colliders.Add((SphereCollider)collider);
+		}
 		//Set curPosition
+		curPosition = this.transform.position;
 	}
 	
 	private void Update () {
+		Debug.Log(curPosition + " vs " + transform.position);
+
 
 		//Interpolate position
+		InterpolatePosition();
 	}
 
 	private void FixedUpdate() {
 		//While isMoving accelerate, else deccelerate
-
+		if (isMoving) { Accelerate(); }
+		else { Deccelerate(); }
 		//Apply Movement
+		ApplyGravity();
+		ApplyMovement();
 	}
 
 	/// <summary>
@@ -51,38 +61,41 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	/// <param name="direction"> Direction the Pawn will move to. </param>
 	public void Move(Vector3 direction) {
-
+		isMoving = true;
+		curDirection = direction;
 	}
 
 	/// <summary>
 	/// Sets isMoving to false;
 	/// </summary>
 	public void Stop() {
-
+		isMoving = false;
 	}
 
 	//Adds acceleration to curMoveSpeed unless maxSpeed = moveSpeed
 	private void Accelerate() {
-
+		if (curSpeed >= maxSpeed) { return; }
+		curSpeed += acceleration;
 	}
 
 	//Substracts decceleration to curMoveSpeed unless maxSpeed = 0
 	private void Deccelerate() {
-
+		if (curSpeed <= 0) { return; }
+		curSpeed -= decceleration;
 	}
 
 	/// <summary>
 	/// Adds the Pawns jumpForce to curJumpSpeed
 	/// </summary>
 	public void Jump() {
-
+		curJumpSpeed += jumpForce;
 	}
 
 	/// <summary>
 	/// Applies gravity to curJumpSpeed, based on elapsed time
 	/// </summary>
 	private void ApplyGravity() {
-
+		curJumpSpeed -= gravity * Time.deltaTime;
 	}
 
 	/// <summary>
@@ -102,6 +115,9 @@ public class Pawn : MonoBehaviour {
 	/// If Pawn isGrounded, set curJumpSpeed to 0.
 	/// </summary>
 	private void ApplyMovement() {
+		curPosition += curDirection * curSpeed * Time.deltaTime;
+		curPosition.y += curJumpSpeed * Time.deltaTime;
+		if (IsGrounded()) { curJumpSpeed = 0; }
 	}
 
 	/// <summary>
@@ -109,7 +125,8 @@ public class Pawn : MonoBehaviour {
 	/// Help: http://answers.unity3d.com/questions/875886/interpolation-of-players-position-over-rpc-calls.html
 	/// </summary>
 	private void InterpolatePosition() {
-
+		//TODO: Lerp should change between 0 and 1, I think?!
+		transform.position = Vector3.Lerp(lastPosition, curPosition, 1);
 	}
 
 
