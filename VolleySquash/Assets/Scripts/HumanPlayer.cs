@@ -44,8 +44,8 @@ public class HumanPlayer : Controller {
 			newDirection += Vector3.right;
 		}
 
-		if (newDirection == Vector3.zero) { Debug.Log("I DO STOP!!!");  pawn.Stop(); }
+		if (newDirection == Vector3.zero) { pawn.Stop(); }
 
-		else { pawn.Move(newDirection); }
+		else { pawn.Move(Vector3.Normalize(newDirection)); }
 	}
 }

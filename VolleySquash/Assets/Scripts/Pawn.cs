@@ -21,6 +21,7 @@ public class Pawn : MonoBehaviour {
 	[SerializeField]
 	private float maxSpeed;
 	private bool isMoving;
+	private float speedScale = 0.02f;
 
 	//Jump variables
 	[SerializeField]
@@ -31,7 +32,9 @@ public class Pawn : MonoBehaviour {
 	private bool grounded;
 
 	//Time
-	float LastReceiveDelta;
+	float lastReceiveDelta = 0f;
+	float targetTimeStamp = 0f;
+	float lastTimeStamp = 0f;
 
 
 	// Use this for initialization
@@ -54,22 +57,20 @@ public class Pawn : MonoBehaviour {
 
 		//Interpolate position
 		InterpolatePosition();
-
-		LastReceiveDelta += Time.deltaTime;
-    }
+	}
 
 	private void FixedUpdate() {
 		//While isMoving accelerate, else deccelerate
 		if (isMoving) { Accelerate(); }
 		else { Deccelerate(); }
 		//Apply Movement
-		if (!IsGrounded()) {
-			ApplyGravity();
-		}
+		ApplyGravity();
 		ApplyMovement();
 
-		LastReceiveDelta = 0;
-    }
+		lastTimeStamp = targetTimeStamp;
+		targetTimeStamp = Time.time;
+		lastReceiveDelta = targetTimeStamp - lastTimeStamp;
+	}
 
 	/// <summary>
 	/// Sets isMoving to true;
@@ -109,6 +110,7 @@ public class Pawn : MonoBehaviour {
 	public void Jump() {
 		if (!grounded) { return; }
 		curJumpSpeed += jumpForce;
+		Debug.Log("I DID JUMP!!!");
 	}
 
 	/// <summary>
@@ -116,7 +118,12 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	private void ApplyGravity() {
 		//if (IsGrounded()) { return; }
-		curJumpSpeed -= gravity * Time.deltaTime;
+
+		curJumpSpeed -= gravity * lastReceiveDelta;
+
+		if (IsGrounded() && curJumpSpeed < 0) {
+			curJumpSpeed = 0;
+		}
 	}
 
 	/// <summary>
@@ -127,16 +134,13 @@ public class Pawn : MonoBehaviour {
 		if (!lowerBody) { return true; }
 		RaycastHit hit;
 		if (Physics.Raycast(curPosition + lowerBody.transform.localPosition, Vector3.down, out hit, lowerBody.radius)) {
-			if (!colliders.Contains(hit.collider as SphereCollider)) {
-				if (hit.distance < lowerBody.radius + lowerBody.transform.localPosition.y) {
-					curPosition.y = lowerBody.radius + Mathf.Abs(lowerBody.transform.localPosition.y);
-				}
+			if (colliders.Contains(hit.collider as SphereCollider)) { return grounded = false;}
+			if (hit.distance < lowerBody.radius + lowerBody.transform.localPosition.y) {
+				curPosition.y = lowerBody.radius + Mathf.Abs(lowerBody.transform.localPosition.y);
 			}
-			grounded = true;
-			return true;
+			return grounded = true;
 		}
-		grounded = false;
-		return false;
+		return grounded = false;
 	}
 
 
@@ -148,9 +152,9 @@ public class Pawn : MonoBehaviour {
 	/// If Pawn isGrounded, set curJumpSpeed to 0.
 	/// </summary>
 	private void ApplyMovement() {
-		curPosition += curDirection * curSpeed * Time.deltaTime;
-		curPosition.y += curJumpSpeed * Time.deltaTime;
-		if (IsGrounded()) { curJumpSpeed = 0; }
+		lastPosition = curPosition;
+		curPosition += curDirection * curSpeed * speedScale;
+		curPosition.y += curJumpSpeed * speedScale;
 	}
 
 	/// <summary>
@@ -159,8 +163,10 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	private void InterpolatePosition() {
 		//TODO: Lerp should change between 0 and 1, I think?!
-		transform.position = Vector3.Lerp(lastPosition, curPosition, 1);
-		Debug.Log(1 / Time.deltaTime * LastReceiveDelta);
+		if (lastReceiveDelta == 0) { lastReceiveDelta = 0.02f; }
+		//(Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta
+		transform.position = Vector3.Lerp(lastPosition, curPosition, (Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta);
+		//Debug.Log( "lastPos: " + lastPosition + " vs Logic Pos: " + curPosition + " vs Transform: " + transform.position);
 	}
 
 
