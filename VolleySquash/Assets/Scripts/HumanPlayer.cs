@@ -7,7 +7,6 @@ public class HumanPlayer : Controller {
 
 	private void Start() {
 		base.Start();
-		Debug.Log("I AM SO COOL STARTING!");
 		controls = new Controls();
 	}
 
@@ -45,7 +44,7 @@ public class HumanPlayer : Controller {
 			newDirection += Vector3.right;
 		}
 
-		if (newDirection == Vector3.zero) { pawn.Stop(); }
+		if (newDirection == Vector3.zero) { Debug.Log("I DO STOP!!!");  pawn.Stop(); }
 
 		else { pawn.Move(newDirection); }
 	}
