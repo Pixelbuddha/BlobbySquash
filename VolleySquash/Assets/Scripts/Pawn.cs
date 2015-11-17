@@ -13,6 +13,7 @@ public class Pawn : MonoBehaviour {
 	private Vector3 curPosition;
 	private Vector3 curDirection;
 	private Vector3 lastPosition;
+	public Vector3 curVelocity;
 
 	//Move variables
 	[SerializeField]
@@ -70,6 +71,8 @@ public class Pawn : MonoBehaviour {
 		lastTimeStamp = targetTimeStamp;
 		targetTimeStamp = Time.time;
 		lastReceiveDelta = targetTimeStamp - lastTimeStamp;
+
+		curVelocity = lastPosition - curPosition;
 	}
 
 	/// <summary>
@@ -136,7 +139,7 @@ public class Pawn : MonoBehaviour {
 		if (Physics.Raycast(curPosition + lowerBody.transform.localPosition, Vector3.down, out hit, lowerBody.radius)) {
 			if (colliders.Contains(hit.collider as SphereCollider)) { return grounded = false;}
 			if (hit.distance < lowerBody.radius + lowerBody.transform.localPosition.y) {
-				curPosition.y = lowerBody.radius + Mathf.Abs(lowerBody.transform.localPosition.y);
+				curPosition.y += lowerBody.radius - hit.distance;
 			}
 			return grounded = true;
 		}
@@ -168,7 +171,4 @@ public class Pawn : MonoBehaviour {
 		transform.position = Vector3.Lerp(lastPosition, curPosition, (Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta);
 		//Debug.Log( "lastPos: " + lastPosition + " vs Logic Pos: " + curPosition + " vs Transform: " + transform.position);
 	}
-
-
-
 }

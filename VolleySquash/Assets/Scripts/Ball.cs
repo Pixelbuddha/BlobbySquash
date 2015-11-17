@@ -24,9 +24,8 @@ public class Ball : MonoBehaviour
         collider = GetComponent<SphereCollider>();
     }
 
-    private void Update()
-    {
-        transform.position = Vector3.Lerp(previousPos, curPos, (Time.time - timeAtPreviousFrame) / Time.fixedDeltaTime);
+    private void Update() {
+		transform.position = Vector3.Lerp(previousPos, curPos, (Time.time - timeAtPreviousFrame) / Time.fixedDeltaTime);
     }
 
     private void FixedUpdate()
@@ -35,15 +34,17 @@ public class Ball : MonoBehaviour
 
         // Update ball position
         ApplyGravitation();
-        MoveWithCollision();
+		//MoveWithCollision();
+		Move(velocity);
 
-        timeBetweenFrames = Time.time - timeAtPreviousFrame;
+		timeBetweenFrames = Time.time - timeAtPreviousFrame;
         timeAtPreviousFrame = Time.time;
     }
 
     private void Move(Vector3 distance)
     {
         curPos += distance;
+		Debug.Log("MOVING!");
     }
 
     private void ApplyGravitation()
@@ -66,17 +67,34 @@ public class Ball : MonoBehaviour
 
         if (collided)
         {
-            float rest = velocity.magnitude - hit.distance;
-            Move(hit.distance * velocity.normalized);
-            Vector3 refDir = Vector3.Reflect(velocity.normalized, hit.normal);
-            refDir *= velocity.magnitude;
-            velocity = refDir;
-            Move(refDir * rest);
+            //float rest = velocity.magnitude - hit.distance;
+            //Move(hit.distance * velocity.normalized);
+            //Vector3 refDir = Vector3.Reflect(velocity.normalized, hit.normal);
+            //refDir *= velocity.magnitude;
+            //velocity = refDir;
+            //Move(refDir * rest);
         }
         else
         {
-            Move(velocity);
+            //Move(velocity);
         }
 
     }
+
+	public void OnCollisionEnter(Collision collision) {
+		Vector3 collisionNormal = Vector3.zero;
+		foreach (ContactPoint contact in collision.contacts) {
+			collisionNormal += contact.normal;
+		}
+		//Debug.Log(collisionNormal.normalized);
+		Vector3 refDir = Vector3.Reflect(velocity, collisionNormal.normalized);
+		velocity = refDir;
+
+		//TESTING
+		if (collision.transform.parent == null) { return; }
+		else if (collision.transform.parent.name == "Pawn") {
+			velocity += collision.transform.parent.GetComponent<Pawn>().curVelocity * Time.fixedDeltaTime;
+			Debug.Log(collision.transform.parent.GetComponent<Pawn>().curVelocity);
+        }
+	}
 }

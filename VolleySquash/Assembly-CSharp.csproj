@@ -47,12 +47,14 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\AIPlayer.cs" />
      <Compile Include="Assets\Scripts\Ball.cs" />
+     <Compile Include="Assets\Scripts\CollisionController.cs" />
      <Compile Include="Assets\Scripts\Controller.cs" />
      <Compile Include="Assets\Scripts\Controls.cs" />
      <Compile Include="Assets\Scripts\Game.cs" />
      <Compile Include="Assets\Scripts\GameField.cs" />
      <Compile Include="Assets\Scripts\HumanPlayer.cs" />
      <Compile Include="Assets\Scripts\IAmThePlayer.cs" />
+     <Compile Include="Assets\Scripts\ICollidable.cs" />
      <Compile Include="Assets\Scripts\ObjectPhysics.cs" />
      <Compile Include="Assets\Scripts\Pawn.cs" />
      <Compile Include="Assets\Scripts\Wall.cs" />
