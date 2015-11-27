@@ -7,14 +7,9 @@ public class Pawn : MonoBehaviour {
 	private Controller controller;
 	private List<SphereCollider> colliders;
 	private SphereCollider lowerBody;
-	private GameField gameField;
 
-	//The current logical position (differs from drawn position!)
-	private Vector3 curPosition;
-	private Vector3 curDirection;
-	private Vector3 lastPosition;
-	public Vector3 curVelocity;
-
+	
+	private Vector3 moveDirection;
 	//Move variables
 	[SerializeField]
 	private float acceleration, decceleration;
@@ -22,20 +17,15 @@ public class Pawn : MonoBehaviour {
 	[SerializeField]
 	private float maxSpeed;
 	private bool isMoving;
-	private float speedScale = 0.02f;
 
 	//Jump variables
 	[SerializeField]
 	private float gravity;
 	[SerializeField]
 	private float jumpForce;
-	private float curJumpSpeed;
-	private bool grounded;
 
-	//Time
-	float lastReceiveDelta = 0f;
-	float targetTimeStamp = 0f;
-	float lastTimeStamp = 0f;
+	private float distanceToGround;
+	private Rigidbody myRigidbody;
 
 
 	// Use this for initialization
@@ -50,29 +40,15 @@ public class Pawn : MonoBehaviour {
 				lowerBody = collider;
 			}
 		}
-		//Set curPosition
-		curPosition = this.transform.position;
+
+		distanceToGround = lowerBody.bounds.extents.y;
+		myRigidbody = GetComponent<Rigidbody>();
 	}
 
 	private void Update() {
-
-		//Interpolate position
-		InterpolatePosition();
-	}
-
-	private void FixedUpdate() {
-		//While isMoving accelerate, else deccelerate
 		if (isMoving) { Accelerate(); }
 		else { Deccelerate(); }
-		//Apply Movement
-		ApplyGravity();
 		ApplyMovement();
-
-		lastTimeStamp = targetTimeStamp;
-		targetTimeStamp = Time.time;
-		lastReceiveDelta = targetTimeStamp - lastTimeStamp;
-
-		curVelocity = lastPosition - curPosition;
 	}
 
 	/// <summary>
@@ -82,7 +58,7 @@ public class Pawn : MonoBehaviour {
 	/// <param name="direction"> Direction the Pawn will move to. </param>
 	public void Move(Vector3 direction) {
 		isMoving = true;
-		curDirection = direction;
+		moveDirection = direction;
 	}
 
 	/// <summary>
@@ -108,25 +84,11 @@ public class Pawn : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Adds the Pawns jumpForce to curJumpSpeed
+	/// Jump!
 	/// </summary>
 	public void Jump() {
-		if (!grounded) { return; }
-		curJumpSpeed += jumpForce;
-		Debug.Log("I DID JUMP!!!");
-	}
-
-	/// <summary>
-	/// Applies gravity to curJumpSpeed, based on elapsed time
-	/// </summary>
-	private void ApplyGravity() {
-		//if (IsGrounded()) { return; }
-
-		curJumpSpeed -= gravity * lastReceiveDelta;
-
-		if (IsGrounded() && curJumpSpeed < 0) {
-			curJumpSpeed = 0;
-		}
+		if (!IsGrounded()) { return; }
+		myRigidbody.velocity += Vector3.up * jumpForce;
 	}
 
 	/// <summary>
@@ -134,16 +96,7 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	/// <returns>Returns true if the Pawn touches a ground. </returns>
 	public bool IsGrounded() {
-		if (!lowerBody) { return true; }
-		RaycastHit hit;
-		if (Physics.Raycast(curPosition + lowerBody.transform.localPosition, Vector3.down, out hit, lowerBody.radius)) {
-			if (colliders.Contains(hit.collider as SphereCollider)) { return grounded = false;}
-			if (hit.distance < lowerBody.radius + lowerBody.transform.localPosition.y) {
-				curPosition.y += lowerBody.radius - hit.distance;
-			}
-			return grounded = true;
-		}
-		return grounded = false;
+		return Physics.Raycast(lowerBody.transform.position, Vector3.down, distanceToGround + 0.001f);
 	}
 
 
@@ -155,20 +108,16 @@ public class Pawn : MonoBehaviour {
 	/// If Pawn isGrounded, set curJumpSpeed to 0.
 	/// </summary>
 	private void ApplyMovement() {
-		lastPosition = curPosition;
-		curPosition += curDirection * curSpeed * speedScale;
-		curPosition.y += curJumpSpeed * speedScale;
+		Vector3 direction = Vector3.zero;
+		direction += moveDirection * curSpeed;
+
+		Vector3 newVelocity = direction;
+		newVelocity.y = myRigidbody.velocity.y;
+
+		myRigidbody.velocity = newVelocity;
 	}
 
-	/// <summary>
-	/// Interpolates (Lerp) between lastPosition and curPosition.
-	/// Help: http://answers.unity3d.com/questions/875886/interpolation-of-players-position-over-rpc-calls.html
-	/// </summary>
-	private void InterpolatePosition() {
-		//TODO: Lerp should change between 0 and 1, I think?!
-		if (lastReceiveDelta == 0) { lastReceiveDelta = 0.02f; }
-		//(Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta
-		transform.position = Vector3.Lerp(lastPosition, curPosition, (Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta);
-		//Debug.Log( "lastPos: " + lastPosition + " vs Logic Pos: " + curPosition + " vs Transform: " + transform.position);
+	public float GetSpeed() {
+		return myRigidbody.velocity.magnitude;
 	}
 }
