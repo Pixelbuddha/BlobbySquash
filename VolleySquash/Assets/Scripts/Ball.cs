@@ -19,6 +19,6 @@ public class Ball : MonoBehaviour {
 			}
 			Vector3 directionOut = Vector3.Reflect(myRigidbody.velocity, normal);
 			myRigidbody.AddForce(directionOut.normalized * (other.gameObject.GetComponent<Pawn>().GetSpeed() * GetComponent<SphereCollider>().material.bounciness) * forceMultiplier);
-        }
+		}
 	}
 }

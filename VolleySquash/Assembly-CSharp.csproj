@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\BallCanvas.cs" />
+     <Compile Include="Assets\CameraController.cs" />
      <Compile Include="Assets\Scripts\AIPlayer.cs" />
      <Compile Include="Assets\Scripts\Ball.cs" />
      <Compile Include="Assets\Scripts\Controller.cs" />
@@ -54,6 +55,10 @@
      <Compile Include="Assets\Scripts\GameField.cs" />
      <Compile Include="Assets\Scripts\HumanPlayer.cs" />
      <Compile Include="Assets\Scripts\Pawn.cs" />
+     <Compile Include="Assets\Scripts\PhysicsManager.cs" />
+     <Compile Include="Assets\Scripts\PhysicsObject.cs" />
+     <Compile Include="Assets\Scripts\PlanePhysics.cs" />
+     <Compile Include="Assets\Scripts\SpherePhysic.cs" />
      <Compile Include="Assets\TestCam.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Programme/Unity 5/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
