@@ -3,39 +3,61 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PhysicsObject : MonoBehaviour {
-	//------------CONSTRUCTOR------------
-	private bool _sleeping;
-	private int _ticksSleeping;
-	private Vector3 _lastTransform;
+	//------------FIELDS------------
+	private Vector3 _lastPosition;
+	private Vector3 _force;
+
+	public bool movable = false;
+
+	//------------PROPERTIES------------
+	public Vector3 LastPosition {
+		get { return _lastPosition; }
+	}
+
+	public bool Moving {
+		get { return movable && (Velocity.sqrMagnitude > 0); }
+	}
+
+	public Vector3 Velocity {
+		get { return transform.position - LastPosition; }
+	}
 
 	//------------CONSTRUCTOR------------
 	protected virtual void Start() {
 		PhysicsManager.Instance.AddObject(this);
-		_ticksSleeping = 0;
-		_sleeping = true;
+		_lastPosition = transform.position;
 	}
 
 	//------------DESTRUCTOR------------
 	protected virtual void OnDestroy() {
-		PhysicsManager.Instance.RemoveObject(this);
+		//TODO: Fix me! - Eule
+		//PhysicsManager.Instance.RemoveObject(this);
 	}
 
-	protected void CheckSleeping() {
-		if (_lastTransform != transform.position) {
-			_ticksSleeping++;
-		}
-		else {
-			_ticksSleeping = 0;
-			_sleeping = false;
-		}
-
-		if (_ticksSleeping >= PhysicsManager.ticksToSleep) { _sleeping = true; }
-		_lastTransform = transform.position;
-	}
+	
 
 	//------------PUBLIC METHOD------------
-	public virtual void Tick(float deltaTime) {
-		CheckSleeping();
-		if (_sleeping) { return; }
+
+	public void AddForce(Vector3 force) {
+		_force += force;
 	}
+
+	public virtual void Tick(float deltaTime) {
+		Vector3 lastPos = transform.position;
+		if (!movable) { return; }
+		AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime));
+		AddForce(Velocity * 1);
+		transform.position += _force;
+		_force = Vector3.zero;
+		Debug.Log("POSITIONS: " + transform.position.y + " " + lastPos.y);
+		_lastPosition = lastPos;
+	}
+
+	public void SetVelocity(Vector3 newVelocity) {
+		_lastPosition = transform.position - newVelocity;
+		//Debug.Log(_lastPosition + " " + transform.position + " " + Velocity);
+	}
+
+	//------------PRIVATE METHODS------------
+	//TODO: Interpolate! - Eule
 }

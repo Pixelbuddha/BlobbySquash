@@ -6,20 +6,22 @@ public class PhysicsManager : MonoBehaviour {
 
 	//------------FIELDS------------
 	private static PhysicsManager _instance;
-	private List<PhysicsObject> _listener;
+	private List<PhysicsObject> _listener = new List<PhysicsObject>();
 	private float _timeElapsed;
 
 	[SerializeField]
-	private float _tickInterval = 0.1f;
+	private float _tickInterval = 0.033f;
 
 	//------------CONSTANTS------------
 	public const int ticksToSleep = 5;
+	public const float gavity = 9.81f;
 
 	//------------PROPERTIES------------
 	public static PhysicsManager Instance {
 		get {
 			if (_instance == null) {
 				GameObject go = new GameObject();
+				go.name = "_physicsManager";
 				_instance = go.AddComponent<PhysicsManager>();
 			}
 			return _instance;
@@ -49,8 +51,19 @@ public class PhysicsManager : MonoBehaviour {
 	}
 
 	private void Tick(float deltaTime) {
+		//Debug.Log("tick ");
 		foreach (PhysicsObject ob in _listener) {
 			ob.Tick(deltaTime);
+		}
+		//Debug.Log("coll ");
+		CheckCollision();
+	}
+
+	private void CheckCollision() {
+		for (int i = 0; i < _listener.Count; i++ ) {
+			for (int j = i+1; j < _listener.Count; j++) {
+				PhysicsCollision.Collide(_listener[i], _listener[j]);
+			}
 		}
 	}
 }
