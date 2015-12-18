@@ -56,7 +56,7 @@ public class PhysicsCollision : MonoBehaviour {
 				Vector3 newVelocity = Vector3.Reflect(sphere.Velocity, plane.Normal);
 				plane.transform.position = planeLastPos;
 				sphere.transform.position = sphereLastPos;
-				sphere.SetVelocity(newVelocity);
+				sphere.SetCollisionVelocity(newVelocity);
 				//Debug.Log("COLLISION POS: " + sphere.transform.position.y);
 				//sphere.SetVelocity(Vector3.zero);
 				//Debug.Log("I DO COLLIDE! " + newVelocity);

@@ -6,6 +6,7 @@ public class PhysicsObject : MonoBehaviour {
 	//------------FIELDS------------
 	private Vector3 _lastPosition;
 	private Vector3 _force;
+	private Vector3? _collisionVelocity = null;
 
 	public bool movable = false;
 
@@ -53,9 +54,16 @@ public class PhysicsObject : MonoBehaviour {
 		_lastPosition = lastPos;
 	}
 
-	public void SetVelocity(Vector3 newVelocity) {
-		_lastPosition = transform.position - newVelocity;
+	public void SetCollisionVelocity(Vector3 newVelocity) {
+		_collisionVelocity = newVelocity;
+		//_lastPosition = transform.position - newVelocity;
 		//Debug.Log(_lastPosition + " " + transform.position + " " + Velocity);
+	}
+
+	public void ApplyCollisionVelocity() {
+		if (_collisionVelocity == null) { return; }
+		_lastPosition = transform.position - _collisionVelocity.Value;
+		_collisionVelocity = null;
 	}
 
 	//------------PRIVATE METHODS------------
