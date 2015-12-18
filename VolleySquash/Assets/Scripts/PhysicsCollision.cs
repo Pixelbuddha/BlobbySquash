@@ -4,8 +4,8 @@ using System.Collections.Generic;
 public class PhysicsCollision : MonoBehaviour {
 
 	public static void Collide(PhysicsObject A, PhysicsObject B) {
-		bool aMoving = A.Moving;
-		bool bMoving = B.Moving;
+		bool aMoving = A.isMoving;
+		bool bMoving = B.isMoving;
 		if (!aMoving && !bMoving) { return; }
 
 		if (A.GetType() == typeof(PhysicsSphere)) {
@@ -30,34 +30,34 @@ public class PhysicsCollision : MonoBehaviour {
 	}
 
 	private static void ApplyCollision(PhysicsPlane plane, PhysicsSphere sphere) {
-		float distanceCur = plane.GetDistanceToPoint(sphere.transform.position);
-		float distanceLast = plane.GetDistanceToPoint(sphere.LastPosition);
+		float distanceCur = plane.GetDistanceToPoint(sphere.position);
+		float distanceLast = plane.GetDistanceToPoint(sphere.lastPosition);
 		//Debug.Log(sphere.gameObject.name + " DistanceCur: " + distanceCur + " DistanceLast: " + distanceLast);
 		//Check if there could be a collision - fast check
 		if (distanceCur >= sphere.Radius && distanceLast >= sphere.Radius) {
-			float dotCur = Vector3.Dot(plane.Normal, (plane.transform.position - sphere.transform.position).normalized);
-			float dotLast = Vector3.Dot(plane.Normal, (plane.LastPosition - sphere.LastPosition).normalized);
+			float dotCur = Vector3.Dot(plane.Normal, (plane.position - sphere.position).normalized);
+			float dotLast = Vector3.Dot(plane.Normal, (plane.lastPosition - sphere.lastPosition).normalized);
 
 			//Debug.Log(dotCur + " " + dotLast);
 			if ((dotCur > 0) == (dotLast > 0)) { return; }
 		}
-		//Debug.Log("COLL: " + sphere.transform.position.y);
+		//Debug.Log("COLL: " + sphere.Position.y);
 		//Now check step by step
 		int steps = 10;
-		Vector3 planePath = plane.transform.position - plane.LastPosition;
-		Vector3 spherePath = sphere.transform.position - sphere.LastPosition;
-		Vector3 planeLastPos = plane.LastPosition;
-		Vector3 sphereLastPos = sphere.LastPosition;
+		Vector3 planePath = plane.position - plane.lastPosition;
+		Vector3 spherePath = sphere.position - sphere.lastPosition;
+		Vector3 planeLastPos = plane.lastPosition;
+		Vector3 sphereLastPos = sphere.lastPosition;
 		for (int i = 0; i <= steps; i++) {
-			Vector3 planePos = plane.LastPosition + ((planePath / (float)steps) * i);
-			Vector3 spherePos = sphere.LastPosition + ((spherePath / (float)steps) * i);
+			Vector3 planePos = plane.lastPosition + ((planePath / (float)steps) * i);
+			Vector3 spherePos = sphere.lastPosition + ((spherePath / (float)steps) * i);
 			//Debug.Log("CO: " + spherePos.y + " " + i);
 			if (plane.GetDistanceToPoint(planePos, spherePos) <= (sphere.Radius + 0.01)) {
-				Vector3 newVelocity = Vector3.Reflect(sphere.Velocity, plane.Normal);
-				plane.transform.position = planeLastPos;
-				sphere.transform.position = sphereLastPos;
-				sphere.SetCollisionVelocity(newVelocity);
-				//Debug.Log("COLLISION POS: " + sphere.transform.position.y);
+				Vector3 newVelocity = Vector3.Reflect(sphere.velocity, plane.Normal);
+				plane.position = planeLastPos;
+				sphere.position = sphereLastPos;
+				sphere.velocity = newVelocity;
+				//Debug.Log("COLLISION POS: " + sphere.Position.y);
 				//sphere.SetVelocity(Vector3.zero);
 				//Debug.Log("I DO COLLIDE! " + newVelocity);
 				break;
@@ -68,20 +68,20 @@ public class PhysicsCollision : MonoBehaviour {
 	}
 
 	private static void ApplyCollision(PhysicsSphere sphereA, PhysicsSphere sphereB) {
-		float distance = GeometryHelper.DistanceSegmentSegment(sphereA.transform.position, sphereA.LastPosition, sphereB.transform.position, sphereB.LastPosition);
+		float distance = GeometryHelper.DistanceSegmentSegment(sphereA.position, sphereA.lastPosition, sphereB.position, sphereB.lastPosition);
 		if (distance >= sphereA.Radius + sphereB.Radius) { return; }
 
-		Vector3 spherePathA = sphereA.transform.position - sphereA.LastPosition;
-		Vector3 spherePathB = sphereB.transform.position - sphereB.LastPosition;
+		Vector3 spherePathA = sphereA.position - sphereA.lastPosition;
+		Vector3 spherePathB = sphereB.position - sphereB.lastPosition;
 
-		Vector3 sphereALastPos = sphereA.LastPosition;
-		Vector3 sphereBLastPos = sphereB.LastPosition;
+		Vector3 sphereALastPos = sphereA.lastPosition;
+		Vector3 sphereBLastPos = sphereB.lastPosition;
 
 		int steps = 10;
 		for (int i = 0; i <= steps; i++) {
 
-			Vector3 spherePosA = sphereA.LastPosition + ((spherePathA / (float)steps) * i);
-			Vector3 spherePosB = sphereB.LastPosition + ((spherePathB / (float)steps) * i);
+			Vector3 spherePosA = sphereA.lastPosition + ((spherePathA / (float)steps) * i);
+			Vector3 spherePosB = sphereB.lastPosition + ((spherePathB / (float)steps) * i);
 
 			if ((spherePosB - spherePosA).magnitude <= sphereA.Radius + sphereB.Radius) {
 
@@ -91,27 +91,48 @@ public class PhysicsCollision : MonoBehaviour {
 				collisionNormal.Normalize();
 				//Debug.Log(" normal: " + collisionNormal);
 
-				if (Vector3.Dot(collisionNormal, sphereA.Velocity) < 0 || Vector3.Dot(collisionNormal, sphereB.Velocity) > 0) {
+				if (Vector3.Dot(collisionNormal, sphereA.velocity) < 0 || Vector3.Dot(collisionNormal, sphereB.velocity) > 0) {
 
-					float speedA = sphereA.Velocity.magnitude;
-					float speedB = sphereB.Velocity.magnitude;
+					float tempFactorA = Vector3.Dot(sphereA.velocity, collisionNormal);
+					float tempFactorB = Vector3.Dot(sphereB.velocity, collisionNormal);
 
-					Vector3 newVelocityA = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereA.Velocity;
-					Vector3 newVelocityB = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereB.Velocity;
+					Vector3 AxisVelocityA = tempFactorA * collisionNormal;
+					Vector3 AxisVelocityB = tempFactorB * collisionNormal;
 
-					Vector3 newDirectionA = Vector3.Reflect(sphereA.Velocity, collisionNormal).normalized;
-					Vector3 newDirectionB = Vector3.Reflect(sphereB.Velocity, collisionNormal).normalized;
+					sphereA.velocity -= AxisVelocityA;
+					sphereB.velocity -= AxisVelocityB;
 
-					if (sphereA.Velocity.magnitude < 0.01) { newDirectionA = collisionNormal; }
-					if (sphereB.Velocity.magnitude < 0.01) { newDirectionB = -collisionNormal; }
+					float tempFactor3 = massA + massB;
+					float tempFactor4 = massA - massB;
 
-					Debug.Log("SphereA: oldVelo " + sphereA.Velocity + " newSpeed " + newVelocityA.magnitude + " newDir " + newDirectionA);
-					Debug.Log("SphereB: oldVelo " + sphereB.Velocity + " newSpeed " + newVelocityB.magnitude + " newDir " + newDirectionB);
+					float tempFactor5 = (2.0f * massB * tempFactorB + tempFactorA * tempFactor4) / tempFactor3;
+					float tempFactor6 = (2.0f * massA * tempFactorA - tempFactorB * tempFactor4) / tempFactor3;
 
-					sphereA.transform.position = sphereALastPos;
-					sphereB.transform.position = sphereBLastPos;
-					sphereA.SetCollisionVelocity(newDirectionA * newVelocityA.magnitude);
-					sphereB.SetCollisionVelocity(newDirectionB * newVelocityB.magnitude);
+					AxisVelocityA = tempFactor5 * collisionNormal;
+					AxisVelocityB = tempFactor6 * collisionNormal;
+
+					sphereA.velocity += AxisVelocityA;
+					sphereB.velocity += AxisVelocityB;
+
+					//float speedA = sphereA.Velocity.magnitude;
+					//float speedB = sphereB.Velocity.magnitude;
+
+					//Vector3 newVelocityA = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereA.Velocity;
+					//Vector3 newVelocityB = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereB.Velocity;
+
+					//Vector3 newDirectionA = Vector3.Reflect(sphereA.Velocity, collisionNormal).normalized;
+					//Vector3 newDirectionB = Vector3.Reflect(sphereB.Velocity, collisionNormal).normalized;
+
+					//if (sphereA.Velocity.magnitude < 0.01) { newDirectionA = collisionNormal; }
+					//if (sphereB.Velocity.magnitude < 0.01) { newDirectionB = -collisionNormal; }
+
+					//Debug.Log("SphereA: oldVelo " + sphereA.Velocity + " newSpeed " + newVelocityA.magnitude + " newDir " + newDirectionA);
+					//Debug.Log("SphereB: oldVelo " + sphereB.Velocity + " newSpeed " + newVelocityB.magnitude + " newDir " + newDirectionB);
+
+					//sphereA.Position = sphereALastPos;
+					//sphereB.Position = sphereBLastPos;
+					//sphereA.SetCollisionVelocity(newDirectionA * newVelocityA.magnitude);
+					//sphereB.SetCollisionVelocity(newDirectionB * newVelocityB.magnitude);
 
 					//Debug.Log(sphereB._collisionVelocity);
 					//Debug.LogError("");

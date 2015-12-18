@@ -65,9 +65,5 @@ public class PhysicsManager : MonoBehaviour {
 				PhysicsCollision.Collide(_listener[i], _listener[j]);
 			}
 		}
-
-		for (int i = 0; i < _listener.Count; i++) {
-			_listener[i].ApplyCollisionVelocity();
-		}
 	}
 }

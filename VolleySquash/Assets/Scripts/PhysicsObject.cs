@@ -4,69 +4,46 @@ using System.Collections.Generic;
 
 public class PhysicsObject : MonoBehaviour {
 	//------------FIELDS------------
-	private Vector3 _lastPosition;
-	private Vector3 _force;
-	public Vector3? _collisionVelocity = null;
+	public Vector3 lastPosition;
+	public Vector3 position;
+	public Vector3 velocity;
 
 	public bool movable = false;
 
 	//------------PROPERTIES------------
-	public Vector3 LastPosition {
-		get { return _lastPosition; }
-	}
 
-	public bool Moving {
-		get { return movable && (Velocity.sqrMagnitude > 0); }
-	}
-
-	public Vector3 Velocity {
-		get { return transform.position - LastPosition; }
+	public bool isMoving {
+		get { return movable && (velocity.sqrMagnitude > 0); }
 	}
 
 	//------------CONSTRUCTOR------------
 	protected virtual void Start() {
 		PhysicsManager.Instance.AddObject(this);
-		_lastPosition = transform.position;
+		lastPosition = transform.position;
+		position = lastPosition;
 	}
 
 	//------------DESTRUCTOR------------
 	protected virtual void OnDestroy() {
 		//TODO: Fix me! - Eule
 		//PhysicsManager.Instance.RemoveObject(this);
-	}
-
-	
+	}	
 
 	//------------PUBLIC METHOD------------
+	public void Update() {
+		transform.position = position;
+	}
 
 	public void AddForce(Vector3 force) {
-		_force += force;
+		velocity += force;
 	}
 
 	public virtual void Tick(float deltaTime) {
-		Vector3 lastPos = transform.position;
+		Vector3 lastPos = position;
 		if (!movable) { return; }
 		AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime));
-		AddForce(Velocity * 1);
-		transform.position += _force;
-		_force = Vector3.zero;
-		//Debug.Log("POSITIONS: " + transform.position.y + " " + lastPos.y);
-		_lastPosition = lastPos;
-	}
-
-	public void SetCollisionVelocity(Vector3 newVelocity) {
-		_collisionVelocity = newVelocity;
-		Debug.Log("SetCollisionVelocity:" + gameObject.name + _collisionVelocity);
-		//_lastPosition = transform.position - newVelocity;
-		//Debug.Log(_lastPosition + " " + transform.position + " " + Velocity);
-	}
-
-	public void ApplyCollisionVelocity() {
-		if (_collisionVelocity == null) { return; }
-		_lastPosition = transform.position - _collisionVelocity.Value;
-		Debug.Log("ApplyCollisionVelocity:" + gameObject.name + _collisionVelocity + Velocity);
-		_collisionVelocity = null;
-
+		position += velocity;
+		lastPosition = lastPos;
 	}
 
 	//------------PRIVATE METHODS------------
