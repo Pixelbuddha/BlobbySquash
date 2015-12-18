@@ -53,6 +53,7 @@
      <Compile Include="Assets\Scripts\Controls.cs" />
      <Compile Include="Assets\Scripts\Game.cs" />
      <Compile Include="Assets\Scripts\GameField.cs" />
+     <Compile Include="Assets\Scripts\GeometryHelper.cs" />
      <Compile Include="Assets\Scripts\HumanPlayer.cs" />
      <Compile Include="Assets\Scripts\Pawn.cs" />
      <Compile Include="Assets\Scripts\PhysicsCollision.cs" />

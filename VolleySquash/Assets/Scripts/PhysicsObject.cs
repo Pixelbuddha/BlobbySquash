@@ -50,7 +50,7 @@ public class PhysicsObject : MonoBehaviour {
 		AddForce(Velocity * 1);
 		transform.position += _force;
 		_force = Vector3.zero;
-		Debug.Log("POSITIONS: " + transform.position.y + " " + lastPos.y);
+		//Debug.Log("POSITIONS: " + transform.position.y + " " + lastPos.y);
 		_lastPosition = lastPos;
 	}
 
