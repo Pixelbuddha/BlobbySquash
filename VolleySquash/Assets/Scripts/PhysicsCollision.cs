@@ -89,37 +89,64 @@ public class PhysicsCollision : MonoBehaviour {
 
 				Vector3 collisionNormal = spherePosA - spherePosB;
 				collisionNormal.Normalize();
+				//Debug.Log(" normal: " + collisionNormal);
 
 				if (Vector3.Dot(collisionNormal, sphereA.Velocity) < 0 || Vector3.Dot(collisionNormal, sphereB.Velocity) > 0) {
+
+					float speedA = sphereA.Velocity.magnitude;
+					float speedB = sphereB.Velocity.magnitude;
+
+					Vector3 newVelocityA = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereA.Velocity;
+					Vector3 newVelocityB = 2 * (massA * sphereA.Velocity + massB * sphereB.Velocity) / (massA + massB) - sphereB.Velocity;
+
+					Vector3 newDirectionA = Vector3.Reflect(sphereA.Velocity, collisionNormal).normalized;
+					Vector3 newDirectionB = Vector3.Reflect(sphereB.Velocity, collisionNormal).normalized;
+
+					if (sphereA.Velocity.magnitude < 0.01) { newDirectionA = collisionNormal; }
+					if (sphereB.Velocity.magnitude < 0.01) { newDirectionB = -collisionNormal; }
+
+					Debug.Log("SphereA: oldVelo " + sphereA.Velocity + " newSpeed " + newVelocityA.magnitude + " newDir " + newDirectionA);
+					Debug.Log("SphereB: oldVelo " + sphereB.Velocity + " newSpeed " + newVelocityB.magnitude + " newDir " + newDirectionB);
+
 					sphereA.transform.position = sphereALastPos;
 					sphereB.transform.position = sphereBLastPos;
+					sphereA.SetCollisionVelocity(newDirectionA * newVelocityA.magnitude);
+					sphereB.SetCollisionVelocity(newDirectionB * newVelocityB.magnitude);
 
+					//Debug.Log(sphereB._collisionVelocity);
+					//Debug.LogError("");
 					//The direction of the collision plane, perpendicular to the normal
-					var collisionDirection = new Vector3(-collisionNormal.y, collisionNormal.x, 0);
+					//var collisionDirection = new Vector3(-collisionNormal.y, collisionNormal.x, collisionNormal.z / 2);
+					//collisionDirection = Vector3.Cross(collisionDirection, collisionNormal);
+					//Debug.Log("Dir: " + collisionDirection);
 
-					var v1Parallel = Vector3.Dot(collisionNormal, sphereA.Velocity) * collisionNormal;
-					var v1Ortho = Vector3.Dot(collisionDirection, sphereA.Velocity) * collisionDirection;
-					var v2Parallel = Vector3.Dot(collisionNormal, sphereB.Velocity) * collisionNormal;
-					var v2Ortho = Vector3.Dot(collisionDirection, sphereB.Velocity) * collisionDirection;
-
+					//var v1Parallel = Vector3.Dot(collisionNormal, sphereA.Velocity) * collisionNormal;
+					//var v1Ortho = Vector3.Dot(collisionDirection, sphereA.Velocity) * collisionDirection;
+					//var v2Parallel = Vector3.Dot(collisionNormal, sphereB.Velocity) * collisionNormal;
+					//var v2Ortho = Vector3.Dot(collisionDirection, sphereB.Velocity) * collisionDirection;
+					//Debug.Log("A: " + v1Parallel + " " + v1Ortho + " normal: " + collisionNormal);
+					//Debug.Log("B: " + v2Parallel + " " + v2Ortho + " normal: " + collisionNormal);
+					//Debug.Log("Pre: " + (v1Parallel + v1Ortho).magnitude + " " + (v2Parallel + v2Ortho).magnitude);
 					//var v1Length = v1Parallel.magnitude;
 					//var v2Length = v2Parallel.magnitude;
 					//var commonVelocity = 2 * (massA * v1Length + massB * v2Length) / (massA + massB);
 					//var v1LengthAfterCollision = commonVelocity - v1Length;
 					//var v2LengthAfterCollision = commonVelocity - v2Length;
 
-					var totalMass = massA + massB;
-					var v1ParallelNew = (v1Parallel * (massA - massB) + 2 * massB * v2Parallel) / totalMass;
-					var v2ParallelNew = (v2Parallel * (massB - massA) + 2 * massA * v1Parallel) / totalMass;
-					v1Parallel = v1ParallelNew;
-					v2Parallel = v2ParallelNew;
+					//var totalMass = massA + massB;
+					//var v1ParallelNew = (v1Parallel * (massA - massB) + 2 * massB * v2Parallel) / totalMass;
+					//var v2ParallelNew = (v2Parallel * (massB - massA) + 2 * massA * v1Parallel) / totalMass;
+					//v1Parallel = v1ParallelNew;
+					//v2Parallel = v2ParallelNew;
 
-					sphereA.SetCollisionVelocity(v1Parallel + v1Ortho);
-					sphereB.SetCollisionVelocity(v2Parallel + v2Ortho);
+					//sphereA.SetCollisionVelocity(v1Parallel + v1Ortho);
+					//sphereB.SetCollisionVelocity(v2Parallel + v2Ortho);
+					//Debug.Log("From: " + sphereA.Velocity.magnitude + " " + sphereB.Velocity.magnitude);
+					//Debug.Log("To: " + (v1Parallel + v1Ortho).magnitude + " " + (v2Parallel + v2Ortho).magnitude);
 					//Debug.LogError( sphereA.gameObject.name + " " + v1Parallel + v1Ortho + " B: " + v2Parallel + v2Ortho);
 					break;
 				}
-				Debug.Log("BALLS FLY APART! " + collisionNormal + "Dot A: " + Vector3.Dot(collisionNormal, sphereA.Velocity) + " Dot B: " + Vector3.Dot(collisionNormal, sphereB.Velocity));
+				//Debug.Log("BALLS FLY APART! " + collisionNormal + "Dot A: " + Vector3.Dot(collisionNormal, sphereA.Velocity) + " Dot B: " + Vector3.Dot(collisionNormal, sphereB.Velocity));
 			}
 
 			sphereALastPos = spherePosA;

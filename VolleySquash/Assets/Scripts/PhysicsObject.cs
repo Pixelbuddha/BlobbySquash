@@ -6,7 +6,7 @@ public class PhysicsObject : MonoBehaviour {
 	//------------FIELDS------------
 	private Vector3 _lastPosition;
 	private Vector3 _force;
-	private Vector3? _collisionVelocity = null;
+	public Vector3? _collisionVelocity = null;
 
 	public bool movable = false;
 
@@ -56,6 +56,7 @@ public class PhysicsObject : MonoBehaviour {
 
 	public void SetCollisionVelocity(Vector3 newVelocity) {
 		_collisionVelocity = newVelocity;
+		Debug.Log("SetCollisionVelocity:" + gameObject.name + _collisionVelocity);
 		//_lastPosition = transform.position - newVelocity;
 		//Debug.Log(_lastPosition + " " + transform.position + " " + Velocity);
 	}
@@ -63,7 +64,9 @@ public class PhysicsObject : MonoBehaviour {
 	public void ApplyCollisionVelocity() {
 		if (_collisionVelocity == null) { return; }
 		_lastPosition = transform.position - _collisionVelocity.Value;
+		Debug.Log("ApplyCollisionVelocity:" + gameObject.name + _collisionVelocity + Velocity);
 		_collisionVelocity = null;
+
 	}
 
 	//------------PRIVATE METHODS------------
