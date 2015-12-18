@@ -39,6 +39,25 @@ public class PhysicsManager : MonoBehaviour {
 		_listener.Remove(ob);
 	}
 
+	public void FastForward(float sec) {
+		foreach (PhysicsObject ob in _listener) {
+			ob.Freeze();
+		}
+
+		while (sec > 0) {
+			Tick(_tickInterval);
+			sec -= _tickInterval;
+		}
+	}
+
+	public void Rewind() {
+		foreach (PhysicsObject ob in _listener) {
+			ob.Unfreeze();
+		}
+	}
+
+
+
 	//------------PRIVATE METHODS------------
 	private void Update() {
 		_timeElapsed += Time.deltaTime;
@@ -51,14 +70,14 @@ public class PhysicsManager : MonoBehaviour {
 	}
 
 	private void Tick(float deltaTime) {
-		//Debug.Log("tick ");
 		foreach (PhysicsObject ob in _listener) {
 			ob.Tick(deltaTime);
 		}
-		//Debug.Log("coll ");
+
 		CheckCollision();
 	}
 
+	//Optimize with multiply lists!
 	private void CheckCollision() {
 		for (int i = 0; i < _listener.Count; i++ ) {
 			for (int j = i+1; j < _listener.Count; j++) {

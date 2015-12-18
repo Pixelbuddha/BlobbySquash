@@ -1,24 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent (typeof(PhysicsObject))]
 public class Ball : MonoBehaviour {
 
-	private Rigidbody myRigidbody;
-	private float forceMultiplier;
-	
-	void Start () {
-		myRigidbody = GetComponent<Rigidbody>();
-		forceMultiplier = 0.3f;
-    }
+	private PhysicsObject _physicsObject;
+	private Transform _ghostBody;
 
-	private void OnCollisionEnter(Collision other) {
-		if (other.gameObject.tag == "Player") {
-			Vector3 normal = Vector3.zero;
-			foreach (ContactPoint contact in other.contacts) {
-				normal += contact.normal;
-			}
-			Vector3 directionOut = Vector3.Reflect(myRigidbody.velocity, normal);
-			myRigidbody.AddForce(directionOut.normalized * (other.gameObject.GetComponent<Pawn>().GetSpeed() * GetComponent<SphereCollider>().material.bounciness) * forceMultiplier);
-		}
+	public void Start() {
+		_physicsObject = GetComponent<PhysicsObject>();
+		_ghostBody = transform.FindChild("GhostBody");
+		_ghostBody.SetParent(transform.parent);
+	}
+	
+	public void Update() {
+		PhysicsManager.Instance.FastForward(5f);
+		Vector3 futurePosition = _physicsObject.state.position;
+		PhysicsManager.Instance.Rewind();
+		_ghostBody.transform.position = futurePosition;
 	}
 }

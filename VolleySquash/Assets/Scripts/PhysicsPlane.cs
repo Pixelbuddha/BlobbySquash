@@ -4,14 +4,13 @@ using System.Collections;
 [RequireComponent(typeof(Plane))]
 public class PhysicsPlane : PhysicsObject {
 
-	//------------PROPERTIES------------
-	public Vector3 Normal {
-		get { return transform.rotation * transform.GetComponent<MeshFilter>().mesh.normals[0]; }
-	}
+	//------------FIELDS------------
+	public Vector3 Normal; 
 
 	//------------CONSTRUCTOR---------
 	protected override void Start() {
 		base.Start();
+		Normal =  transform.rotation * transform.GetComponent<MeshFilter>().mesh.normals[0];
 	}
 
 	//------------PUBLIC METHODS------------
