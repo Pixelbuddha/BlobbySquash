@@ -2,13 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Pawn : MonoBehaviour {
+public class Pawn : PhysicsObject {
 	//Controller and Collider components.
 	private Controller controller;
-	private List<SphereCollider> colliders;
-	private SphereCollider lowerBody;
 
-	
 	private Vector3 moveDirection;
 	//Move variables
 	[SerializeField]
@@ -24,28 +21,32 @@ public class Pawn : MonoBehaviour {
 	[SerializeField]
 	private float jumpForce;
 
+	public float airControl;
 	private float distanceToGround;
-	private Rigidbody myRigidbody;
+
+	//private Vector3 _lastVelocity;
+
+	public float _dynamicFriction = 0.8f;
+	public float _airFriction = 0.95f;
+
+	public float groundPosition;
+
 
 
 	// Use this for initialization
 	public void Start() {
+		base.Start();
 		//Get a controller
 		controller = GetComponent<Controller>();
-		//Get colliders and add to list
-		colliders = new List<SphereCollider>();
-		foreach (SphereCollider collider in GetComponentsInChildren<SphereCollider>()) {
-			colliders.Add(collider);
-			if (collider.name == "LowerBody") {
-				lowerBody = collider;
-			}
-		}
+		OnCollision += OnCollide;
 
-		distanceToGround = lowerBody.bounds.extents.y;
-		myRigidbody = GetComponent<Rigidbody>();
+		var lowerBody = transform.FindChild("LowerBody");
+		groundPosition = lowerBody.lossyScale.y / 2 - lowerBody.localPosition.y;
 	}
 
-	private void Update() {
+	public override void Update() {
+		base.Update();
+
 		if (isMoving) { Accelerate(); }
 		else { Deccelerate(); }
 		ApplyMovement();
@@ -70,8 +71,13 @@ public class Pawn : MonoBehaviour {
 
 	//Adds acceleration to curMoveSpeed unless maxSpeed = moveSpeed
 	private void Accelerate() {
-		if (curSpeed >= maxSpeed) { return; }
-		curSpeed += acceleration;
+		//if (curSpeed >= maxSpeed) { return; }
+		//curSpeed += acceleration;
+		Vector3 curMoveSpeed = state.velocity;
+		curMoveSpeed.y = 0;
+		if (curMoveSpeed.magnitude * 10 >= maxSpeed) { return; }
+		if (!_isGrounded) { AddForce(moveDirection * Time.deltaTime * acceleration * airControl); return; }
+		AddForce(moveDirection * Time.deltaTime * acceleration);
 	}
 
 	//Substracts decceleration to curMoveSpeed unless maxSpeed = 0
@@ -88,7 +94,8 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	public void Jump() {
 		if (!IsGrounded()) { return; }
-		myRigidbody.velocity += Vector3.up * jumpForce;
+		AddForce(Vector3.up * jumpForce);
+		//myRigidbody.velocity += Vector3.up * jumpForce;
 	}
 
 	/// <summary>
@@ -96,7 +103,8 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	/// <returns>Returns true if the Pawn touches a ground. </returns>
 	public bool IsGrounded() {
-		return Physics.Raycast(lowerBody.transform.position, Vector3.down, distanceToGround + 0.001f);
+		//return Physics.Raycast(lowerBody.transform.position, Vector3.down, distanceToGround + 0.001f);
+		return state.position.y == groundPosition;
 	}
 
 
@@ -108,16 +116,49 @@ public class Pawn : MonoBehaviour {
 	/// If Pawn isGrounded, set curJumpSpeed to 0.
 	/// </summary>
 	private void ApplyMovement() {
-		Vector3 direction = Vector3.zero;
-		direction += moveDirection * curSpeed;
+		//Vector3 direction = Vector3.zero;
+		//direction += moveDirection * curSpeed * Time.deltaTime;
 
-		Vector3 newVelocity = direction;
-		newVelocity.y = myRigidbody.velocity.y;
+		//Vector3 newVelocity = direction;
+		////newVelocity.y = state.velocity.y;
 
-		myRigidbody.velocity = newVelocity;
+		//state.velocity -= _lastVelocity;
+		//state.velocity += newVelocity;
+		//_lastVelocity = newVelocity;
+
+		//Debug.Log(state.velocity);
 	}
 
 	public float GetSpeed() {
-		return myRigidbody.velocity.magnitude;
+		//return myRigidbody.velocity.magnitude;
+		return 0;
+	}
+
+	private void OnCollide(PhysicsCollider collider) {
+		if (collider.physicsObject.name == "Ground") {
+			state.velocity.y *= 0.0f;
+			state.position.y = groundPosition;
+			state.lastPosition.y = groundPosition;
+		}
+
+		if (collider.physicsObject.name == "Ball") {
+			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f , 0.5f);
+			//collider.physicsObject.state.velocity += Vector3.forward * 0.7f;
+		}
+    }
+
+	public override void Tick(float deltaTime) {
+		_isGrounded = IsGrounded();
+		if (_isGrounded) {
+			state.velocity.x *= _dynamicFriction;
+			state.velocity.z *= _dynamicFriction;
+		}
+		else {
+			state.velocity.x *= _airFriction;
+			state.velocity.z *= _airFriction;
+			AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime) * 5);
+
+		}
+		base.Tick(deltaTime);
 	}
 }

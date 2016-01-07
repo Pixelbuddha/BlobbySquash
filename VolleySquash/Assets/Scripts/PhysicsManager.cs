@@ -6,7 +6,7 @@ public class PhysicsManager : MonoBehaviour {
 
 	//------------FIELDS------------
 	private static PhysicsManager _instance;
-	private List<PhysicsObject> _listener = new List<PhysicsObject>();
+	public List<PhysicsObject> _listener = new List<PhysicsObject>();
 	private float _timeElapsed;
 
 	[SerializeField]

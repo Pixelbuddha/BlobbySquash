@@ -18,7 +18,12 @@ public class PhysicsObject : MonoBehaviour {
 	public State frozenState;
 	public List<PhysicsCollider> collider;
 
+	public delegate void CollisionEvent(PhysicsCollider collider);
+	public event CollisionEvent OnCollision;
+
 	public bool movable = false;
+
+	public bool _isGrounded = false;
 
 
 	//------------PROPERTIES------------
@@ -33,9 +38,9 @@ public class PhysicsObject : MonoBehaviour {
 		state.lastPosition = transform.position;
 		state.position = state.lastPosition;
 		collider = GetComponentsInChildren<PhysicsCollider>().ToList();
-		if (GetComponent<PhysicsCollider>() != null) {
-			collider.Add(GetComponent<PhysicsCollider>());
-		}
+		//		if (GetComponent<PhysicsCollider>() != null) {
+		//			collider.Add(GetComponent<PhysicsCollider>());
+		//		}
 		foreach (PhysicsCollider col in collider) {
 			col.physicsObject = this;
 		}
@@ -48,7 +53,7 @@ public class PhysicsObject : MonoBehaviour {
 	}
 
 	//------------PUBLIC METHOD------------
-	public void Update() {
+	public virtual void Update() {
 		transform.position = state.position;
 	}
 
@@ -59,9 +64,12 @@ public class PhysicsObject : MonoBehaviour {
 	public virtual void Tick(float deltaTime) {
 		Vector3 lastPos = state.position;
 		if (!movable) { return; }
-		AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime));
+		if (!_isGrounded) {
+			AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime));
+		}
 		state.position += state.velocity;
 		state.lastPosition = lastPos;
+		//Debug.Log(this.name + " Velocity: " + state.velocity + " Position: " + state.position+" g:"+ _isGrounded);
 	}
 
 	public void Freeze() {
@@ -70,6 +78,13 @@ public class PhysicsObject : MonoBehaviour {
 
 	public void Unfreeze() {
 		state = frozenState;
+	}
+
+	public void CallOnCollide(PhysicsCollider collider) {
+		if (OnCollision != null) {
+			//Debug.Log("Call it!");
+			OnCollision(collider);
+		}
 	}
 
 	//------------PRIVATE METHODS------------

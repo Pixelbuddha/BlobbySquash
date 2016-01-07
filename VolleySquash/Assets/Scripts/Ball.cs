@@ -9,14 +9,14 @@ public class Ball : MonoBehaviour {
 
 	public void Start() {
 		_physicsObject = GetComponent<PhysicsObject>();
-		_ghostBody = transform.FindChild("GhostBody");
-		_ghostBody.SetParent(transform.parent);
+		//_ghostBody = transform.FindChild("GhostBody");
+		//_ghostBody.SetParent(transform.parent);
 	}
 	
 	public void Update() {
-		PhysicsManager.Instance.FastForward(5f);
-		Vector3 futurePosition = _physicsObject.state.position;
-		PhysicsManager.Instance.Rewind();
-		_ghostBody.transform.position = futurePosition;
+		//PhysicsManager.Instance.FastForward(5f);
+		//Vector3 futurePosition = _physicsObject.state.position;
+		//PhysicsManager.Instance.Rewind();
+		//_ghostBody.transform.position = futurePosition;
 	}
 }
