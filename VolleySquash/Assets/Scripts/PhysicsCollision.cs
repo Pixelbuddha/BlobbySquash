@@ -8,6 +8,17 @@ public class PhysicsCollision : MonoBehaviour {
 		bool bMoving = B.isMoving;
 		if (!aMoving && !bMoving) { return; }
 
+		var colliderA = A.collider;
+		var colliderB = B.collider;
+
+		foreach (PhysicsCollider colA in colliderA) {
+			foreach (PhysicsCollider colB in colliderB) {
+				Collide(colA, colB);
+			}
+		}
+	}
+
+	private static void Collide(PhysicsCollider A, PhysicsCollider B) {
 		//Optimze mit Enum!
 		var AType = A.GetType();
 		var BType = B.GetType();
@@ -32,31 +43,31 @@ public class PhysicsCollision : MonoBehaviour {
 	}
 
 	private static void ApplyCollision(PhysicsPlane plane, PhysicsSphere sphere) {
-		float distanceCur = plane.GetDistanceToPoint(sphere.state.position);
-		float distanceLast = plane.GetDistanceToPoint(sphere.state.lastPosition);
+		float distanceCur = plane.GetDistanceToPoint(sphere.physicsObject.state.position);
+		float distanceLast = plane.GetDistanceToPoint(sphere.physicsObject.state.lastPosition);
 
 		//Check if there could be a collision - fast check
 		if (distanceCur >= sphere.Radius && distanceLast >= sphere.Radius) {
-			float dotCur = Vector3.Dot(plane.Normal, (plane.state.position - sphere.state.position).normalized);
-			float dotLast = Vector3.Dot(plane.Normal, (plane.state.lastPosition - sphere.state.lastPosition).normalized);
+			float dotCur = Vector3.Dot(plane.Normal, (plane.physicsObject.state.position - sphere.physicsObject.state.position).normalized);
+			float dotLast = Vector3.Dot(plane.Normal, (plane.physicsObject.state.lastPosition - sphere.physicsObject.state.lastPosition).normalized);
 
 			if ((dotCur > 0) == (dotLast > 0)) { return; }
 		}
 
 		//Now check step by step
 		int steps = 10;
-		Vector3 planePath = plane.state.position - plane.state.lastPosition;
-		Vector3 spherePath = sphere.state.position - sphere.state.lastPosition;
-		Vector3 planeLastPos = plane.state.lastPosition;
-		Vector3 sphereLastPos = sphere.state.lastPosition;
+		Vector3 planePath = plane.physicsObject.state.position - plane.physicsObject.state.lastPosition;
+		Vector3 spherePath = sphere.physicsObject.state.position - sphere.physicsObject.state.lastPosition;
+		Vector3 planeLastPos = plane.physicsObject.state.lastPosition;
+		Vector3 sphereLastPos = sphere.physicsObject.state.lastPosition;
 		for (int i = 0; i <= steps; i++) {
-			Vector3 planePos = plane.state.lastPosition + ((planePath / (float)steps) * i);
-			Vector3 spherePos = sphere.state.lastPosition + ((spherePath / (float)steps) * i);
+			Vector3 planePos = plane.physicsObject.state.lastPosition + ((planePath / (float)steps) * i);
+			Vector3 spherePos = sphere.physicsObject.state.lastPosition + ((spherePath / (float)steps) * i);
 			if (plane.GetDistanceToPoint(planePos, spherePos) <= (sphere.Radius + 0.01)) {
-				Vector3 newVelocity = Vector3.Reflect(sphere.state.velocity, plane.Normal);
-				plane.state.position = planeLastPos;
-				sphere.state.position = sphereLastPos;
-				sphere.state.velocity = newVelocity;
+				Vector3 newVelocity = Vector3.Reflect(sphere.physicsObject.state.velocity, plane.Normal);
+				plane.physicsObject.state.position = planeLastPos;
+				sphere.physicsObject.state.position = sphereLastPos;
+				sphere.physicsObject.state.velocity = newVelocity;
 				break;
 			}
 			planeLastPos = planePos;
@@ -65,20 +76,20 @@ public class PhysicsCollision : MonoBehaviour {
 	}
 
 	private static void ApplyCollision(PhysicsSphere sphereA, PhysicsSphere sphereB) {
-		float distance = GeometryHelper.DistanceSegmentSegment(sphereA.state.position, sphereA.state.lastPosition, sphereB.state.position, sphereB.state.lastPosition);
+		float distance = GeometryHelper.DistanceSegmentSegment(sphereA.physicsObject.state.position, sphereA.physicsObject.state.lastPosition, sphereB.physicsObject.state.position, sphereB.physicsObject.state.lastPosition);
 		if (distance >= sphereA.Radius + sphereB.Radius) { return; }
 
-		Vector3 spherePathA = sphereA.state.position - sphereA.state.lastPosition;
-		Vector3 spherePathB = sphereB.state.position - sphereB.state.lastPosition;
+		Vector3 spherePathA = sphereA.physicsObject.state.position - sphereA.physicsObject.state.lastPosition;
+		Vector3 spherePathB = sphereB.physicsObject.state.position - sphereB.physicsObject.state.lastPosition;
 
-		Vector3 sphereALastPos = sphereA.state.lastPosition;
-		Vector3 sphereBLastPos = sphereB.state.lastPosition;
+		Vector3 sphereALastPos = sphereA.physicsObject.state.lastPosition;
+		Vector3 sphereBLastPos = sphereB.physicsObject.state.lastPosition;
 
 		int steps = 10;
 		for (int i = 0; i <= steps; i++) {
 
-			Vector3 spherePosA = sphereA.state.lastPosition + ((spherePathA / (float)steps) * i);
-			Vector3 spherePosB = sphereB.state.lastPosition + ((spherePathB / (float)steps) * i);
+			Vector3 spherePosA = sphereA.physicsObject.state.lastPosition + ((spherePathA / (float)steps) * i);
+			Vector3 spherePosB = sphereB.physicsObject.state.lastPosition + ((spherePathB / (float)steps) * i);
 
 			if ((spherePosB - spherePosA).magnitude <= sphereA.Radius + sphereB.Radius) {
 
@@ -87,16 +98,16 @@ public class PhysicsCollision : MonoBehaviour {
 				Vector3 collisionNormal = spherePosA - spherePosB;
 				collisionNormal.Normalize();
 
-				if (Vector3.Dot(collisionNormal, sphereA.state.velocity) < 0 || Vector3.Dot(collisionNormal, sphereB.state.velocity) > 0) {
+				if (Vector3.Dot(collisionNormal, sphereA.physicsObject.state.velocity) < 0 || Vector3.Dot(collisionNormal, sphereB.physicsObject.state.velocity) > 0) {
 
-					float tempFactorA = Vector3.Dot(sphereA.state.velocity, collisionNormal);
-					float tempFactorB = Vector3.Dot(sphereB.state.velocity, collisionNormal);
+					float tempFactorA = Vector3.Dot(sphereA.physicsObject.state.velocity, collisionNormal);
+					float tempFactorB = Vector3.Dot(sphereB.physicsObject.state.velocity, collisionNormal);
 
 					Vector3 AxisVelocityA = tempFactorA * collisionNormal;
 					Vector3 AxisVelocityB = tempFactorB * collisionNormal;
 
-					sphereA.state.velocity -= AxisVelocityA;
-					sphereB.state.velocity -= AxisVelocityB;
+					sphereA.physicsObject.state.velocity -= AxisVelocityA;
+					sphereB.physicsObject.state.velocity -= AxisVelocityB;
 
 					float tempFactor3 = massA + massB;
 					float tempFactor4 = massA - massB;
@@ -107,8 +118,8 @@ public class PhysicsCollision : MonoBehaviour {
 					AxisVelocityA = tempFactor5 * collisionNormal;
 					AxisVelocityB = tempFactor6 * collisionNormal;
 
-					sphereA.state.velocity += AxisVelocityA;
-					sphereB.state.velocity += AxisVelocityB;
+					sphereA.physicsObject.state.velocity += AxisVelocityA;
+					sphereB.physicsObject.state.velocity += AxisVelocityB;
 					break;
 				}
 			}

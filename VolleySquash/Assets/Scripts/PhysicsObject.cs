@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 
 
@@ -15,8 +16,10 @@ public class PhysicsObject : MonoBehaviour {
 	//------------FIELDS------------
 	public State state;
 	public State frozenState;
+	public List<PhysicsCollider> collider;
 
 	public bool movable = false;
+
 
 	//------------PROPERTIES------------
 
@@ -29,6 +32,13 @@ public class PhysicsObject : MonoBehaviour {
 		PhysicsManager.Instance.AddObject(this);
 		state.lastPosition = transform.position;
 		state.position = state.lastPosition;
+		collider = GetComponentsInChildren<PhysicsCollider>().ToList();
+		if (GetComponent<PhysicsCollider>() != null) {
+			collider.Add(GetComponent<PhysicsCollider>());
+		}
+		foreach (PhysicsCollider col in collider) {
+			col.physicsObject = this;
+		}
 	}
 
 	//------------DESTRUCTOR------------

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PhysicsSphere : PhysicsObject {
+public class PhysicsSphere : PhysicsCollider {
 
 	//------------FIELDS------------
 	private float _radius;
@@ -15,11 +15,5 @@ public class PhysicsSphere : PhysicsObject {
 	protected override void Start() {
 		base.Start();
 		_radius = transform.lossyScale.x * 0.5f;
-		movable = true;
-	}
-
-	//------------PUBLIC METHODS------------
-	public override void Tick(float deltaTime) {
-		base.Tick(deltaTime);
 	}
 }

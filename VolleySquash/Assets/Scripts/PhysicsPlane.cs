@@ -2,7 +2,7 @@
 using System.Collections;
 
 [RequireComponent(typeof(Plane))]
-public class PhysicsPlane : PhysicsObject {
+public class PhysicsPlane : PhysicsCollider {
 
 	//------------FIELDS------------
 	public Vector3 Normal; 
