@@ -62,10 +62,10 @@ public class Game : MonoBehaviour {
 
 	public void SetActivePlayer(bool A) {
 		activePlayerA = A;
-		foreach (PhysicsCollider col in playerA.collider) {
+		foreach (PhysicsCollider col in playerA.colliders) {
 			col.collideWithSphere = A;
 		}
-		foreach (PhysicsCollider col in playerB.collider) {
+		foreach (PhysicsCollider col in playerB.colliders) {
 			col.collideWithSphere = !A;
 		}
 	}

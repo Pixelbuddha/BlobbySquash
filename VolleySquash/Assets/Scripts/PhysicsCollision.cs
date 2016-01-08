@@ -8,15 +8,14 @@ public class PhysicsCollision : MonoBehaviour {
 		bool bMoving = B.isMoving;
 		if (!aMoving && !bMoving) { return; }
 
-		var colliderA = A.collider;
-		var colliderB = B.collider;
+		var colliderA = A.colliders;
+		var colliderB = B.colliders;
 
 		foreach (PhysicsCollider colA in colliderA) {
 			foreach (PhysicsCollider colB in colliderB) {
 				if (Collide(colA, colB)) {
 					A.CallOnCollide(colB);
 					B.CallOnCollide(colA);
-					return;
 				}
 			}
 		}

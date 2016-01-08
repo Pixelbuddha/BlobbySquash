@@ -25,7 +25,12 @@ public class Ball : PhysicsObject {
 	}
 
 	public void OnCollide(PhysicsCollider collider) {
-		Debug.Log(state.velocity);
+		//Debug.Log(state.velocity);
 		Game.instance.BallCollide(collider);
+		if (PhysicsManager.simulatedPhysic && collider.GetType() == typeof(PhysicsPlane)) {
+			foreach (var obj in Object.FindObjectsOfType<AIPlayer>()) {
+				obj.ballCollisions++;
+			}
+        }
 	}
 }

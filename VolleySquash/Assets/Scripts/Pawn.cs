@@ -36,6 +36,8 @@ public class Pawn : PhysicsObject {
 
 	public int score, matchPoints;
 
+	public float aimAssist = 0.25f;
+
 	// Use this for initialization
 	protected override void Start() {
 		base.Start();
@@ -67,6 +69,7 @@ public class Pawn : PhysicsObject {
 	/// <param name="direction"> Direction the Pawn will move to. </param>
 	public void Move(Vector3 direction) {
 		isMoving = true;
+		direction.y = 0;
 		moveDirection = direction;
 	}
 
@@ -129,6 +132,7 @@ public class Pawn : PhysicsObject {
 		if (IsGrounded() || _dashed) { return; }
 		Vector3 dash = futurePosition - this.transform.position;
 		_dashed = true;
+		state.velocity = Vector3.zero;
 		AddForce(dash.normalized * dashForce);
 	}
 
@@ -169,7 +173,7 @@ public class Pawn : PhysicsObject {
 	}
 
 	private void OnCollide(PhysicsCollider collider) {
-		Debug.Log("Collide! " + collider.name);
+		//Debug.Log("Collide! " + collider.name);
 		if (collider.physicsObject.name == "Ground") {
 			state.velocity.y *= 0.0f;
 			state.position.y = groundPosition;
@@ -181,10 +185,11 @@ public class Pawn : PhysicsObject {
 
 		if (collider.physicsObject.name == "Ball") {
 			collider.physicsObject.applyGravity = true;
-
+			foreach(PhysicsCollider col in colliders) {
+				col.collideWithSphere = false;
+			}
 			if (this.transform.position.z > collider.physicsObject.transform.position.z) { return; }
-			//collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, 0.5f);
-			//collider.physicsObject.state.velocity += Vector3.forward * 0.7f;
+			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, aimAssist);
 
 		}
 	}
@@ -202,6 +207,7 @@ public class Pawn : PhysicsObject {
 
 		}
 		base.Tick(deltaTime);
+		//Debug.Log(" " + this.gameObject.name + " " + state.position.z);
 	}
 
 	public bool HasWon(Pawn otherPlayer) {

@@ -10,9 +10,8 @@ public class PhysicsManager : MonoBehaviour {
 	private float _timeElapsed;
 
 	public static bool simulatedPhysic = false;
-
-	[SerializeField]
-	private float _tickInterval = 0.033f;
+	
+	public float tickInterval = 0.033f;
 
 	//------------CONSTANTS------------
 	public const int ticksToSleep = 5;
@@ -48,8 +47,8 @@ public class PhysicsManager : MonoBehaviour {
 		}
 
 		while (sec > 0) {
-			Tick(_tickInterval);
-			sec -= _tickInterval;
+			Tick(tickInterval);
+			sec -= tickInterval;
 		}
 	}
 
@@ -67,13 +66,13 @@ public class PhysicsManager : MonoBehaviour {
 		_timeElapsed += Time.deltaTime;
 		if (_timeElapsed >= 1f) { _timeElapsed = 1f; }
 
-		while (_timeElapsed >= _tickInterval) {
-			Tick(_tickInterval);
-			_timeElapsed -= _tickInterval;
+		while (_timeElapsed >= tickInterval) {
+			Tick(tickInterval);
+			_timeElapsed -= tickInterval;
 		}
 	}
 
-	private void Tick(float deltaTime) {
+	public void Tick(float deltaTime) {
 		foreach (PhysicsObject ob in _listener) {
 			ob.Tick(deltaTime);
 		}

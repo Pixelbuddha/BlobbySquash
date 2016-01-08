@@ -5,7 +5,7 @@ public class HumanPlayer : Controller {
 
 	Controls controls;
 
-	private void Start() {
+	protected override void Start() {
 		base.Start();
 		controls = new Controls();
 	}
@@ -46,6 +46,6 @@ public class HumanPlayer : Controller {
 
 		if (newDirection == Vector3.zero) { pawn.Stop(); }
 
-		else { pawn.Move(Vector3.Normalize(newDirection)); }
+		else { Move(Vector3.Normalize(newDirection)); }
 	}
 }

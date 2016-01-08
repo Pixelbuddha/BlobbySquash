@@ -16,7 +16,7 @@ public class PhysicsObject : MonoBehaviour {
 	//------------FIELDS------------
 	public State state;
 	public State frozenState;
-	public List<PhysicsCollider> collider;
+	public List<PhysicsCollider> colliders;
 
 	public delegate void CollisionEvent(PhysicsCollider collider);
 	public event CollisionEvent OnCollision;
@@ -44,11 +44,11 @@ public class PhysicsObject : MonoBehaviour {
 		PhysicsManager.Instance.AddObject(this);
 		state.lastPosition = transform.position;
 		state.position = state.lastPosition;
-		collider = GetComponentsInChildren<PhysicsCollider>().ToList();
+		colliders = GetComponentsInChildren<PhysicsCollider>().ToList();
 		//		if (GetComponent<PhysicsCollider>() != null) {
 		//			collider.Add(GetComponent<PhysicsCollider>());
 		//		}
-		foreach (PhysicsCollider col in collider) {
+		foreach (PhysicsCollider col in colliders) {
 			col.physicsObject = this;
 		}
 	}
@@ -76,7 +76,7 @@ public class PhysicsObject : MonoBehaviour {
 		}
 		state.position += state.velocity;
 		state.lastPosition = lastPos;
-	Debug.Log(this.name + " Velocity: " + state.velocity + " Position: " + state.position+" g:"+ _isGrounded);
+	//Debug.Log(this.name + " Velocity: " + state.velocity + " Position: " + state.position+" g:"+ _isGrounded);
 	}
 
 	public void Freeze() {
