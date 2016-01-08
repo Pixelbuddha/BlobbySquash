@@ -32,6 +32,7 @@ public class Pawn : PhysicsObject {
 	public float groundPosition;
 	private bool _dashed;
 	public float dashForce;
+	float levelMinX, levelMaxX, levelMinZ, levelMaxZ;
 
 
 	// Use this for initialization
@@ -42,6 +43,11 @@ public class Pawn : PhysicsObject {
 		OnCollision += OnCollide;
 
 		var lowerBody = transform.FindChild("LowerBody");
+		float radius = lowerBody.transform.lossyScale.x / 2 + 0.01f;
+		levelMinX = GameObject.Find("WallLeft").transform.position.x + radius;
+		levelMaxX = GameObject.Find("WallRight").transform.position.x - radius;
+		levelMinZ = GameObject.Find("OutWall").transform.position.z + radius;
+		levelMaxZ = GameObject.Find("ActiveWall").transform.position.z - radius;
 		groundPosition = lowerBody.lossyScale.y / 2 - lowerBody.localPosition.y;
 	}
 
@@ -78,7 +84,14 @@ public class Pawn : PhysicsObject {
 		curMoveSpeed.y = 0;
 		if (curMoveSpeed.magnitude * 10 >= maxSpeed) { return; }
 		if (!_isGrounded) { AddForce(moveDirection * Time.deltaTime * acceleration * airControl); return; }
-		AddForce(moveDirection * Time.deltaTime * acceleration);
+		Vector3 moveVelocity = moveDirection * Time.deltaTime * acceleration;
+		Vector3 futurePosition = this.transform.position + moveVelocity;
+
+		futurePosition.x = Mathf.Clamp(futurePosition.x, levelMinX, levelMaxX);
+		futurePosition.z = Mathf.Clamp(futurePosition.z, levelMinZ, levelMaxZ);
+
+		moveVelocity = futurePosition - this.transform.position;
+		AddForce(moveVelocity);
 	}
 
 	//Substracts decceleration to curMoveSpeed unless maxSpeed = 0
