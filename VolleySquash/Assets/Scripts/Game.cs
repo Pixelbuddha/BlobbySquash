@@ -43,11 +43,11 @@ public class Game : MonoBehaviour {
 	public void BallCollide(PhysicsCollider collider) {
 		if (PhysicsManager.simulatedPhysic) { return; }
 
-		if (collider.name == "ActiveWall") { ballTouched = false; return; }
+		if (collider.name == "ActiveWall") { SetActivePlayer(!activePlayerA); ballTouched = false; return; }
 
 		bool isA = collider.physicsObject.gameObject == playerA.gameObject;
 		bool isB = collider.physicsObject.gameObject == playerB.gameObject;
-		if (isA || isB) { SetActivePlayer(!activePlayerA); ballTouched = false; Debug.Log("CHANGEPLAYER!"); return; }
+		if (isA || isB) {  ballTouched = false; Debug.Log("CHANGEPLAYER!"); return; }
 		
 		if (!ballTouched) { ballTouched = true; Debug.Log("BALLTOUCHED!"); return; }
 
@@ -58,10 +58,6 @@ public class Game : MonoBehaviour {
 			CheckPoints();
 			Debug.Log("MATCHPOINT!");
 		}
-	}
-
-	public void BallOut() {
-
 	}
 
 	public void SetActivePlayer(bool A) {

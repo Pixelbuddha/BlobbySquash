@@ -25,6 +25,7 @@ public class Ball : PhysicsObject {
 	}
 
 	public void OnCollide(PhysicsCollider collider) {
+		Debug.Log(state.velocity);
 		Game.instance.BallCollide(collider);
 	}
 }

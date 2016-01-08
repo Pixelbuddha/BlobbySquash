@@ -16,6 +16,7 @@ public class PhysicsCollision : MonoBehaviour {
 				if (Collide(colA, colB)) {
 					A.CallOnCollide(colB);
 					B.CallOnCollide(colA);
+					return;
 				}
 			}
 		}
@@ -97,20 +98,26 @@ public class PhysicsCollision : MonoBehaviour {
 	}
 
 	private static bool ApplyCollision(PhysicsSphere sphereA, PhysicsSphere sphereB) {
-		float distance = GeometryHelper.DistanceSegmentSegment(sphereA.physicsObject.state.position, sphereA.physicsObject.state.lastPosition, sphereB.physicsObject.state.position, sphereB.physicsObject.state.lastPosition);
+		Vector3 sphereAOffset = sphereA.GetPositionOffset();
+		Vector3 sphereAPos = sphereA.physicsObject.state.position + sphereAOffset;
+		Vector3 sphereALastPos = sphereA.physicsObject.state.lastPosition + sphereAOffset;
+
+		Vector3 sphereBOffset = sphereB.GetPositionOffset();
+		Vector3 sphereBPos = sphereB.physicsObject.state.position + sphereBOffset;
+		Vector3 sphereBLastPos = sphereB.physicsObject.state.lastPosition + sphereBOffset;
+
+		float distance = GeometryHelper.DistanceSegmentSegment(sphereAPos, sphereALastPos, sphereBPos, sphereBLastPos);
 		if (distance >= sphereA.Radius + sphereB.Radius) { return false; }
 
-		Vector3 spherePathA = sphereA.physicsObject.state.position - sphereA.physicsObject.state.lastPosition;
-		Vector3 spherePathB = sphereB.physicsObject.state.position - sphereB.physicsObject.state.lastPosition;
-
-		Vector3 sphereALastPos = sphereA.physicsObject.state.lastPosition;
-		Vector3 sphereBLastPos = sphereB.physicsObject.state.lastPosition;
+		Vector3 spherePathA = sphereAPos - sphereALastPos;
+		Vector3 spherePathB = sphereBPos - sphereBLastPos;
+		
 
 		int steps = 10;
 		for (int i = 0; i <= steps; i++) {
 
-			Vector3 spherePosA = sphereA.physicsObject.state.lastPosition + ((spherePathA / (float)steps) * i);
-			Vector3 spherePosB = sphereB.physicsObject.state.lastPosition + ((spherePathB / (float)steps) * i);
+			Vector3 spherePosA = sphereALastPos + ((spherePathA / (float)steps) * i);
+			Vector3 spherePosB = sphereBLastPos + ((spherePathB / (float)steps) * i);
 
 			if ((spherePosB - spherePosA).magnitude <= sphereA.Radius + sphereB.Radius) {
 
@@ -143,6 +150,9 @@ public class PhysicsCollision : MonoBehaviour {
 
 					sphereA.physicsObject.state.velocity += AxisVelocityA;
 					sphereB.physicsObject.state.velocity += AxisVelocityB;
+
+					sphereA.physicsObject.state.position = sphereALastPos - sphereAOffset;
+					sphereB.physicsObject.state.position = sphereBLastPos - sphereBOffset;
 					return true;
 				}
 			}

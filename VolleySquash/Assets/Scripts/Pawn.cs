@@ -181,7 +181,9 @@ public class Pawn : PhysicsObject {
 
 		if (collider.physicsObject.name == "Ball") {
 			collider.physicsObject.applyGravity = true;
-			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, 0.5f);
+
+			if (this.transform.position.z > collider.physicsObject.transform.position.z) { return; }
+			//collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, 0.5f);
 			//collider.physicsObject.state.velocity += Vector3.forward * 0.7f;
 
 		}

@@ -76,7 +76,7 @@ public class PhysicsObject : MonoBehaviour {
 		}
 		state.position += state.velocity;
 		state.lastPosition = lastPos;
-		//Debug.Log(this.name + " Velocity: " + state.velocity + " Position: " + state.position+" g:"+ _isGrounded);
+	Debug.Log(this.name + " Velocity: " + state.velocity + " Position: " + state.position+" g:"+ _isGrounded);
 	}
 
 	public void Freeze() {
