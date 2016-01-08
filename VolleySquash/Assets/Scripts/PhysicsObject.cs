@@ -22,8 +22,11 @@ public class PhysicsObject : MonoBehaviour {
 	public event CollisionEvent OnCollision;
 
 	public bool movable = false;
+	public bool applyGravity = true;
 
 	public bool _isGrounded = false;
+
+	public Vector3 startPos;
 
 
 	//------------PROPERTIES------------
@@ -33,6 +36,10 @@ public class PhysicsObject : MonoBehaviour {
 	}
 
 	//------------CONSTRUCTOR------------
+	protected virtual void Awake() {
+		startPos = this.transform.position;
+	}
+
 	protected virtual void Start() {
 		PhysicsManager.Instance.AddObject(this);
 		state.lastPosition = transform.position;
@@ -64,7 +71,7 @@ public class PhysicsObject : MonoBehaviour {
 	public virtual void Tick(float deltaTime) {
 		Vector3 lastPos = state.position;
 		if (!movable) { return; }
-		if (!_isGrounded) {
+		if (!_isGrounded && applyGravity) {
 			AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime));
 		}
 		state.position += state.velocity;
@@ -85,6 +92,13 @@ public class PhysicsObject : MonoBehaviour {
 			//Debug.Log("Call it!");
 			OnCollision(collider);
 		}
+	}
+
+	public void SetPosition(Vector3 pos) {
+		transform.position = pos;
+		state.lastPosition = pos;
+		state.position = pos;
+		state.velocity = Vector3.zero;
 	}
 
 	//------------PRIVATE METHODS------------

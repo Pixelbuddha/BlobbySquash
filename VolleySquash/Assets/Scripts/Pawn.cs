@@ -34,9 +34,10 @@ public class Pawn : PhysicsObject {
 	public float dashForce;
 	float levelMinX, levelMaxX, levelMinZ, levelMaxZ;
 
+	public int score, matchPoints;
 
 	// Use this for initialization
-	public void Start() {
+	protected override void Start() {
 		base.Start();
 		//Get a controller
 		controller = GetComponent<Controller>();
@@ -117,12 +118,12 @@ public class Pawn : PhysicsObject {
 	/// Dash!
 	/// </summary>
 	public void Dash() {
-		float distance = (Ball.instance.physicsObject.state.position - this.transform.position).magnitude;
+		float distance = (Ball.instance.state.position - this.transform.position).magnitude;
 		distance = Mathf.Min(0.2f, distance / 60);
 		Debug.Log(distance);
 
 		PhysicsManager.Instance.FastForward(distance);
-		Vector3 futurePosition = Ball.instance.physicsObject.state.position;
+		Vector3 futurePosition = Ball.instance.state.position;
 		PhysicsManager.Instance.Rewind();
 
 		if (IsGrounded() || _dashed) { return; }
@@ -168,6 +169,7 @@ public class Pawn : PhysicsObject {
 	}
 
 	private void OnCollide(PhysicsCollider collider) {
+		Debug.Log("Collide! " + collider.name);
 		if (collider.physicsObject.name == "Ground") {
 			state.velocity.y *= 0.0f;
 			state.position.y = groundPosition;
@@ -178,8 +180,10 @@ public class Pawn : PhysicsObject {
 		}
 
 		if (collider.physicsObject.name == "Ball") {
+			collider.physicsObject.applyGravity = true;
 			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, 0.5f);
 			//collider.physicsObject.state.velocity += Vector3.forward * 0.7f;
+
 		}
 	}
 
@@ -196,5 +200,11 @@ public class Pawn : PhysicsObject {
 
 		}
 		base.Tick(deltaTime);
+	}
+
+	public bool HasWon(Pawn otherPlayer) {
+		if (matchPoints < 11 ) { return false; }
+		if (matchPoints < otherPlayer.matchPoints + 2) { return false; }
+		return true;
 	}
 }

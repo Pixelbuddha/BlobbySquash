@@ -1,26 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent (typeof(PhysicsObject))]
-public class Ball : MonoBehaviour {
+public class Ball : PhysicsObject {
 
-	public PhysicsObject physicsObject;
 	private Transform _ghostBody;
 
 	public static Ball instance;
 	
 
-	public void Start() {
+	protected override void Start() {
+		base.Start();
 		instance = this;
-		physicsObject = GetComponent<PhysicsObject>();
+		OnCollision += OnCollide;
 		//_ghostBody = transform.FindChild("GhostBody");
 		//_ghostBody.SetParent(transform.parent);
 	}
 	
-	public void Update() {
+	public override void Update() {
+		base.Update();
 		//PhysicsManager.Instance.FastForward(5f);
 		//Vector3 futurePosition = _physicsObject.state.position;
 		//PhysicsManager.Instance.Rewind();
 		//_ghostBody.transform.position = futurePosition;
+	}
+
+	public void OnCollide(PhysicsCollider collider) {
+		Game.instance.BallCollide(collider);
 	}
 }
