@@ -38,6 +38,8 @@ public class Pawn : PhysicsObject {
 
 	public float aimAssist = 0.25f;
 
+	public ParticleSystem particleDash;
+
 	// Use this for initialization
 	protected override void Start() {
 		base.Start();
@@ -134,6 +136,7 @@ public class Pawn : PhysicsObject {
 		_dashed = true;
 		state.velocity = Vector3.zero;
 		AddForce(dash.normalized * dashForce);
+		particleDash.Play();
 	}
 
 	/// <summary>
