@@ -4,11 +4,15 @@ using System.Collections;
 [RequireComponent (typeof(PhysicsObject))]
 public class Ball : MonoBehaviour {
 
-	private PhysicsObject _physicsObject;
+	public PhysicsObject physicsObject;
 	private Transform _ghostBody;
 
+	public static Ball instance;
+	
+
 	public void Start() {
-		_physicsObject = GetComponent<PhysicsObject>();
+		instance = this;
+		physicsObject = GetComponent<PhysicsObject>();
 		//_ghostBody = transform.FindChild("GhostBody");
 		//_ghostBody.SetParent(transform.parent);
 	}

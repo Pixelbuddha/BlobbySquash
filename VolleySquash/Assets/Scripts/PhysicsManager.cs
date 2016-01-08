@@ -9,6 +9,8 @@ public class PhysicsManager : MonoBehaviour {
 	public List<PhysicsObject> _listener = new List<PhysicsObject>();
 	private float _timeElapsed;
 
+	public static bool simulatedPhysic = false;
+
 	[SerializeField]
 	private float _tickInterval = 0.033f;
 
@@ -40,6 +42,7 @@ public class PhysicsManager : MonoBehaviour {
 	}
 
 	public void FastForward(float sec) {
+		simulatedPhysic = true;
 		foreach (PhysicsObject ob in _listener) {
 			ob.Freeze();
 		}
@@ -54,6 +57,7 @@ public class PhysicsManager : MonoBehaviour {
 		foreach (PhysicsObject ob in _listener) {
 			ob.Unfreeze();
 		}
+		simulatedPhysic = false;
 	}
 
 

@@ -30,7 +30,8 @@ public class Pawn : PhysicsObject {
 	public float _airFriction = 0.95f;
 
 	public float groundPosition;
-
+	private bool _dashed;
+	public float dashForce;
 
 
 	// Use this for initialization
@@ -93,9 +94,24 @@ public class Pawn : PhysicsObject {
 	/// Jump!
 	/// </summary>
 	public void Jump() {
-		if (!IsGrounded()) { return; }
+
+		if (!IsGrounded()) { Dash(); return; }
 		AddForce(Vector3.up * jumpForce);
 		//myRigidbody.velocity += Vector3.up * jumpForce;
+	}
+
+	/// <summary>
+	/// Dash!
+	/// </summary>
+	public void Dash() {
+		PhysicsManager.Instance.FastForward(0.1f);
+		Vector3 futurePosition = Ball.instance.physicsObject.state.position;
+		PhysicsManager.Instance.Rewind();
+
+		if (IsGrounded() || _dashed) { return; }
+		Vector3 dash = futurePosition - this.transform.position;
+		_dashed = true;
+		AddForce(dash.normalized * dashForce);
 	}
 
 	/// <summary>
@@ -139,13 +155,16 @@ public class Pawn : PhysicsObject {
 			state.velocity.y *= 0.0f;
 			state.position.y = groundPosition;
 			state.lastPosition.y = groundPosition;
+			if (!PhysicsManager.simulatedPhysic) {
+				_dashed = false;
+			}
 		}
 
 		if (collider.physicsObject.name == "Ball") {
-			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f , 0.5f);
+			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, 0.5f);
 			//collider.physicsObject.state.velocity += Vector3.forward * 0.7f;
 		}
-    }
+	}
 
 	public override void Tick(float deltaTime) {
 		_isGrounded = IsGrounded();
