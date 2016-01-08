@@ -104,7 +104,11 @@ public class Pawn : PhysicsObject {
 	/// Dash!
 	/// </summary>
 	public void Dash() {
-		PhysicsManager.Instance.FastForward(0.1f);
+		float distance = (Ball.instance.physicsObject.state.position - this.transform.position).magnitude;
+		distance = Mathf.Min(0.2f, distance / 60);
+		Debug.Log(distance);
+
+		PhysicsManager.Instance.FastForward(distance);
 		Vector3 futurePosition = Ball.instance.physicsObject.state.position;
 		PhysicsManager.Instance.Rewind();
 
