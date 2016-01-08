@@ -7,6 +7,9 @@ public class PhysicsCollider : MonoBehaviour {
 	public PhysicsObject physicsObject;
 	public float bounciness = 0.99f;
 
+	public bool collideWithPlane = true;
+	public bool collideWithSphere = true;
+
 	// Use this for initialization
 	protected virtual void Start() {
 	}

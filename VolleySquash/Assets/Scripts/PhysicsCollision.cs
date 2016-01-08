@@ -28,15 +28,21 @@ public class PhysicsCollision : MonoBehaviour {
 
 		if (AType == typeof(PhysicsSphere)) {
 			if (BType == typeof(PhysicsSphere)) {
+				if (!A.collideWithSphere) { return false; }
+				if (!B.collideWithSphere) { return false; }
 				return ApplyCollision(A as PhysicsSphere, B as PhysicsSphere);
 			}
 
 			else if (BType == typeof(PhysicsPlane)) {
+				if (!A.collideWithPlane) { return false; }
+				if (!B.collideWithSphere) { return false; }
 				return ApplyCollision(B as PhysicsPlane, A as PhysicsSphere);
 			}
 		}
 		else if (AType == typeof(PhysicsPlane)) {
 			if (BType == typeof(PhysicsSphere)) {
+				if (!A.collideWithSphere) { return false; }
+				if (!B.collideWithPlane) { return false; }
 				return ApplyCollision(A as PhysicsPlane, B as PhysicsSphere);
 			}
 			else if (BType == typeof(PhysicsPlane)) {
