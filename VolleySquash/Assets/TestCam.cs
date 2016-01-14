@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Wall : MonoBehaviour {
+public class TestCam : MonoBehaviour {
+
+	public GameObject target;
 
 	// Use this for initialization
 	void Start () {
@@ -10,6 +12,6 @@ public class Wall : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+		//this.transform.LookAt(target.transform);
 	}
 }

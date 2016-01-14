@@ -11,7 +11,7 @@ public abstract class Controller : MonoBehaviour {
 
 
 	// Use this for initialization
-	protected void Start () {
+	protected virtual void Start () {
 		//Get Pawn Component
 		pawn = GetComponent<Pawn>();
 	}

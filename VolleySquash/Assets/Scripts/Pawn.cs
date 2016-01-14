@@ -2,19 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Pawn : MonoBehaviour {
+public class Pawn : PhysicsObject {
 	//Controller and Collider components.
 	private Controller controller;
-	private List<SphereCollider> colliders;
-	private SphereCollider lowerBody;
-	private GameField gameField;
 
-	//The current logical position (differs from drawn position!)
-	private Vector3 curPosition;
-	private Vector3 curDirection;
-	private Vector3 lastPosition;
-	public Vector3 curVelocity;
-
+	private Vector3 moveDirection;
 	//Move variables
 	[SerializeField]
 	private float acceleration, decceleration;
@@ -22,57 +14,54 @@ public class Pawn : MonoBehaviour {
 	[SerializeField]
 	private float maxSpeed;
 	private bool isMoving;
-	private float speedScale = 0.02f;
 
 	//Jump variables
 	[SerializeField]
 	private float gravity;
 	[SerializeField]
 	private float jumpForce;
-	private float curJumpSpeed;
-	private bool grounded;
 
-	//Time
-	float lastReceiveDelta = 0f;
-	float targetTimeStamp = 0f;
-	float lastTimeStamp = 0f;
+	public float airControl;
+	private float distanceToGround;
 
+	//private Vector3 _lastVelocity;
+
+	public float _dynamicFriction = 0.8f;
+	public float _airFriction = 0.95f;
+
+	public float groundPosition;
+	private bool _dashed;
+	public float dashForce;
+	float levelMinX, levelMaxX, levelMinZ, levelMaxZ;
+
+	public int score, matchPoints;
+
+	public float aimAssist = 0.25f;
+
+	public ParticleSystem particleDash;
 
 	// Use this for initialization
-	public void Start() {
+	protected override void Start() {
+		base.Start();
 		//Get a controller
 		controller = GetComponent<Controller>();
-		//Get colliders and add to list
-		colliders = new List<SphereCollider>();
-		foreach (SphereCollider collider in GetComponentsInChildren<SphereCollider>()) {
-			colliders.Add(collider);
-			if (collider.name == "LowerBody") {
-				lowerBody = collider;
-			}
-		}
-		//Set curPosition
-		curPosition = this.transform.position;
+		OnCollision += OnCollide;
+
+		var lowerBody = transform.FindChild("LowerBody");
+		float radius = lowerBody.transform.lossyScale.x / 2 + 0.01f;
+		levelMinX = GameObject.Find("WallLeft").transform.position.x + radius;
+		levelMaxX = GameObject.Find("WallRight").transform.position.x - radius;
+		levelMinZ = GameObject.Find("OutWall").transform.position.z + radius;
+		levelMaxZ = GameObject.Find("ActiveWall").transform.position.z - radius;
+		groundPosition = lowerBody.lossyScale.y / 2 - lowerBody.localPosition.y;
 	}
 
-	private void Update() {
+	public override void Update() {
+		base.Update();
 
-		//Interpolate position
-		InterpolatePosition();
-	}
-
-	private void FixedUpdate() {
-		//While isMoving accelerate, else deccelerate
 		if (isMoving) { Accelerate(); }
 		else { Deccelerate(); }
-		//Apply Movement
-		ApplyGravity();
 		ApplyMovement();
-
-		lastTimeStamp = targetTimeStamp;
-		targetTimeStamp = Time.time;
-		lastReceiveDelta = targetTimeStamp - lastTimeStamp;
-
-		curVelocity = lastPosition - curPosition;
 	}
 
 	/// <summary>
@@ -82,7 +71,8 @@ public class Pawn : MonoBehaviour {
 	/// <param name="direction"> Direction the Pawn will move to. </param>
 	public void Move(Vector3 direction) {
 		isMoving = true;
-		curDirection = direction;
+		direction.y = 0;
+		moveDirection = direction;
 	}
 
 	/// <summary>
@@ -94,8 +84,20 @@ public class Pawn : MonoBehaviour {
 
 	//Adds acceleration to curMoveSpeed unless maxSpeed = moveSpeed
 	private void Accelerate() {
-		if (curSpeed >= maxSpeed) { return; }
-		curSpeed += acceleration;
+		//if (curSpeed >= maxSpeed) { return; }
+		//curSpeed += acceleration;
+		Vector3 curMoveSpeed = state.velocity;
+		curMoveSpeed.y = 0;
+		if (curMoveSpeed.magnitude * 10 >= maxSpeed) { return; }
+		if (!_isGrounded) { AddForce(moveDirection * Time.deltaTime * acceleration * airControl); return; }
+		Vector3 moveVelocity = moveDirection * Time.deltaTime * acceleration;
+		Vector3 futurePosition = this.transform.position + moveVelocity;
+
+		futurePosition.x = Mathf.Clamp(futurePosition.x, levelMinX, levelMaxX);
+		futurePosition.z = Mathf.Clamp(futurePosition.z, levelMinZ, levelMaxZ);
+
+		moveVelocity = futurePosition - this.transform.position;
+		AddForce(moveVelocity);
 	}
 
 	//Substracts decceleration to curMoveSpeed unless maxSpeed = 0
@@ -108,25 +110,33 @@ public class Pawn : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Adds the Pawns jumpForce to curJumpSpeed
+	/// Jump!
 	/// </summary>
 	public void Jump() {
-		if (!grounded) { return; }
-		curJumpSpeed += jumpForce;
-		Debug.Log("I DID JUMP!!!");
+
+		if (!IsGrounded()) { Dash(); return; }
+		AddForce(Vector3.up * jumpForce);
+		//myRigidbody.velocity += Vector3.up * jumpForce;
 	}
 
 	/// <summary>
-	/// Applies gravity to curJumpSpeed, based on elapsed time
+	/// Dash!
 	/// </summary>
-	private void ApplyGravity() {
-		//if (IsGrounded()) { return; }
+	public void Dash() {
+		float distance = (Ball.instance.state.position - this.transform.position).magnitude;
+		distance = Mathf.Min(0.2f, distance / 60);
+		Debug.Log(distance);
 
-		curJumpSpeed -= gravity * lastReceiveDelta;
+		PhysicsManager.Instance.FastForward(distance);
+		Vector3 futurePosition = Ball.instance.state.position;
+		PhysicsManager.Instance.Rewind();
 
-		if (IsGrounded() && curJumpSpeed < 0) {
-			curJumpSpeed = 0;
-		}
+		if (IsGrounded() || _dashed) { return; }
+		Vector3 dash = futurePosition - this.transform.position;
+		_dashed = true;
+		state.velocity = Vector3.zero;
+		AddForce(dash.normalized * dashForce);
+		particleDash.Play();
 	}
 
 	/// <summary>
@@ -134,16 +144,8 @@ public class Pawn : MonoBehaviour {
 	/// </summary>
 	/// <returns>Returns true if the Pawn touches a ground. </returns>
 	public bool IsGrounded() {
-		if (!lowerBody) { return true; }
-		RaycastHit hit;
-		if (Physics.Raycast(curPosition + lowerBody.transform.localPosition, Vector3.down, out hit, lowerBody.radius)) {
-			if (colliders.Contains(hit.collider as SphereCollider)) { return grounded = false;}
-			if (hit.distance < lowerBody.radius + lowerBody.transform.localPosition.y) {
-				curPosition.y += lowerBody.radius - hit.distance;
-			}
-			return grounded = true;
-		}
-		return grounded = false;
+		//return Physics.Raycast(lowerBody.transform.position, Vector3.down, distanceToGround + 0.001f);
+		return state.position.y == groundPosition;
 	}
 
 
@@ -155,20 +157,65 @@ public class Pawn : MonoBehaviour {
 	/// If Pawn isGrounded, set curJumpSpeed to 0.
 	/// </summary>
 	private void ApplyMovement() {
-		lastPosition = curPosition;
-		curPosition += curDirection * curSpeed * speedScale;
-		curPosition.y += curJumpSpeed * speedScale;
+		//Vector3 direction = Vector3.zero;
+		//direction += moveDirection * curSpeed * Time.deltaTime;
+
+		//Vector3 newVelocity = direction;
+		////newVelocity.y = state.velocity.y;
+
+		//state.velocity -= _lastVelocity;
+		//state.velocity += newVelocity;
+		//_lastVelocity = newVelocity;
+
+		//Debug.Log(state.velocity);
 	}
 
-	/// <summary>
-	/// Interpolates (Lerp) between lastPosition and curPosition.
-	/// Help: http://answers.unity3d.com/questions/875886/interpolation-of-players-position-over-rpc-calls.html
-	/// </summary>
-	private void InterpolatePosition() {
-		//TODO: Lerp should change between 0 and 1, I think?!
-		if (lastReceiveDelta == 0) { lastReceiveDelta = 0.02f; }
-		//(Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta
-		transform.position = Vector3.Lerp(lastPosition, curPosition, (Time.time - lastReceiveDelta - lastTimeStamp) / lastReceiveDelta);
-		//Debug.Log( "lastPos: " + lastPosition + " vs Logic Pos: " + curPosition + " vs Transform: " + transform.position);
+	public float GetSpeed() {
+		//return myRigidbody.velocity.magnitude;
+		return 0;
+	}
+
+	private void OnCollide(PhysicsCollider collider) {
+		//Debug.Log("Collide! " + collider.name);
+		if (collider.physicsObject.name == "Ground") {
+			state.velocity.y *= 0.0f;
+			state.position.y = groundPosition;
+			state.lastPosition.y = groundPosition;
+			if (!PhysicsManager.simulatedPhysic) {
+				_dashed = false;
+			}
+		}
+
+		if (collider.physicsObject.name == "Ball") {
+			collider.physicsObject.applyGravity = true;
+			foreach(PhysicsCollider col in colliders) {
+				col.collideWithSphere = false;
+			}
+			if (this.transform.position.z > collider.physicsObject.transform.position.z) { return; }
+			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, aimAssist);
+
+		}
+	}
+
+	public override void Tick(float deltaTime) {
+		_isGrounded = IsGrounded();
+		if (_isGrounded) {
+			state.velocity.x *= _dynamicFriction;
+			state.velocity.z *= _dynamicFriction;
+		}
+		else {
+			state.velocity.x *= _airFriction;
+			state.velocity.z *= _airFriction;
+			AddForce(PhysicsManager.gavity * Vector3.down * (deltaTime * deltaTime) * 5);
+
+		}
+		base.Tick(deltaTime);
+		//Debug.Log(" " + this.gameObject.name + " " + state.position.z);
+	}
+
+	public bool HasWon(Pawn otherPlayer) {
+		if (matchPoints < 11 ) { return false; }
+		if (matchPoints < otherPlayer.matchPoints + 2) { return false; }
+		return true;
 	}
 }
