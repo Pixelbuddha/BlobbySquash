@@ -21,28 +21,15 @@ public class HumanPlayer : Controller {
 	/// Foreach Ingame Control in Controls, listen to Input an call according Method
 	/// </summary>
 	private void GetInput() {
-		if (Input.GetKeyDown(controls.Jump)) {
+		if (Input.GetButtonDown("Jump")) {
 			pawn.Jump();
 		}
 
 		//Get Movement
 		Vector3 newDirection = Vector3.zero;
-
-		if (Input.GetKey(controls.Forward)) {
-			newDirection += Vector3.forward;
-		}
-
-		if (Input.GetKey(controls.Backward)) {
-			newDirection += Vector3.back;
-		}
-
-		if (Input.GetKey(controls.Left)) {
-			newDirection += Vector3.left;
-		}
-
-		if (Input.GetKey(controls.Right)) {
-			newDirection += Vector3.right;
-		}
+		
+		newDirection += Vector3.forward * Input.GetAxis("Vertical");
+		newDirection += Vector3.right * Input.GetAxis("Horizontal");
 
 		if (newDirection == Vector3.zero) { pawn.Stop(); }
 
