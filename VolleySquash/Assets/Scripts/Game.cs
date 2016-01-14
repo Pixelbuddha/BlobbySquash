@@ -42,6 +42,7 @@ public class Game : MonoBehaviour {
 
 	public void BallCollide(PhysicsCollider collider) {
 		if (PhysicsManager.simulatedPhysic) { return; }
+		if (collider.name == "WallLeft" || collider.name == "WallRight") { return; }
 
 		if (collider.name == "ActiveWall") { SetActivePlayer(!activePlayerA); ballTouched = false; return; }
 

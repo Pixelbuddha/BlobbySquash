@@ -6,7 +6,7 @@ public class Ball : PhysicsObject {
 	private Transform _ghostBody;
 
 	public static Ball instance;
-	
+
 
 	protected override void Start() {
 		base.Start();
@@ -15,7 +15,7 @@ public class Ball : PhysicsObject {
 		//_ghostBody = transform.FindChild("GhostBody");
 		//_ghostBody.SetParent(transform.parent);
 	}
-	
+
 	public override void Update() {
 		base.Update();
 		//PhysicsManager.Instance.FastForward(5f);
@@ -28,9 +28,11 @@ public class Ball : PhysicsObject {
 		//Debug.Log(state.velocity);
 		Game.instance.BallCollide(collider);
 		if (PhysicsManager.simulatedPhysic && collider.GetType() == typeof(PhysicsPlane)) {
+			if (collider.name == "WallLeft" || collider.name == "WallRight") { return; }
 			foreach (var obj in Object.FindObjectsOfType<AIPlayer>()) {
+
 				obj.ballCollisions++;
 			}
-        }
+		}
 	}
 }

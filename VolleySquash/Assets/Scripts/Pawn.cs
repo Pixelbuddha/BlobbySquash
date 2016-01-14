@@ -11,8 +11,7 @@ public class Pawn : PhysicsObject {
 	[SerializeField]
 	private float acceleration, decceleration;
 	private float curSpeed;
-	[SerializeField]
-	private float maxSpeed;
+	public float maxSpeed;
 	private bool isMoving;
 
 	//Jump variables
@@ -125,7 +124,6 @@ public class Pawn : PhysicsObject {
 	public void Dash() {
 		float distance = (Ball.instance.state.position - this.transform.position).magnitude;
 		distance = Mathf.Min(0.2f, distance / 60);
-		Debug.Log(distance);
 
 		PhysicsManager.Instance.FastForward(distance);
 		Vector3 futurePosition = Ball.instance.state.position;
@@ -188,8 +186,10 @@ public class Pawn : PhysicsObject {
 
 		if (collider.physicsObject.name == "Ball") {
 			collider.physicsObject.applyGravity = true;
-			foreach(PhysicsCollider col in colliders) {
-				col.collideWithSphere = false;
+			if (!PhysicsManager.simulatedPhysic) {
+				foreach (PhysicsCollider col in colliders) {
+					col.collideWithSphere = false;
+				}
 			}
 			if (this.transform.position.z > collider.physicsObject.transform.position.z) { return; }
 			collider.physicsObject.state.velocity = Vector3.Lerp(collider.physicsObject.state.velocity, Vector3.forward * 0.7f + Vector3.up * 0.25f, aimAssist);
@@ -214,7 +214,7 @@ public class Pawn : PhysicsObject {
 	}
 
 	public bool HasWon(Pawn otherPlayer) {
-		if (matchPoints < 11 ) { return false; }
+		if (matchPoints < 11) { return false; }
 		if (matchPoints < otherPlayer.matchPoints + 2) { return false; }
 		return true;
 	}
