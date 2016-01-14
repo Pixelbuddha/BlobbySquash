@@ -27,7 +27,7 @@ public class Game : MonoBehaviour {
 	}
 
 	public void InitGame() {
-		SetActivePlayer(true);
+		SetActivePlayer(activePlayerA);
 		playerA.SetPosition(playerA.startPos);
 		playerB.SetPosition(playerB.startPos);
 		ball.SetPosition(ball.startPos);
@@ -48,16 +48,15 @@ public class Game : MonoBehaviour {
 
 		bool isA = collider.physicsObject.gameObject == playerA.gameObject;
 		bool isB = collider.physicsObject.gameObject == playerB.gameObject;
-		if (isA || isB) {  ballTouched = false; Debug.Log("CHANGEPLAYER!"); return; }
+		if (isA || isB) {  ballTouched = false; return; }
 		
-		if (!ballTouched) { ballTouched = true; Debug.Log("BALLTOUCHED!"); return; }
+		if (!ballTouched) { ballTouched = true; return; }
 
 		else {
 			var nonActivePlayer = activePlayerA ? playerB : playerA;
 			nonActivePlayer.matchPoints++;
 			InitGame();
 			CheckPoints();
-			Debug.Log("MATCHPOINT!");
 		}
 	}
 
@@ -69,6 +68,7 @@ public class Game : MonoBehaviour {
 		foreach (PhysicsCollider col in playerB.colliders) {
 			col.collideWithSphere = !A;
 		}
+		UpdateScore();
 	}
 
 	public void CheckPoints() {
@@ -92,6 +92,7 @@ public class Game : MonoBehaviour {
     }
 
 	public void UpdateScore() {
-		ScoreBoard.text = "A " + playerA.score + " - " + playerA.matchPoints + " : " + playerB.matchPoints + " - " + playerB.score + " B";
+		string activePlayer = activePlayerA ? " << " : " >> ";
+		ScoreBoard.text = "A " + playerA.score + " - " + playerA.matchPoints + activePlayer + playerB.matchPoints + " - " + playerB.score + " B";
 	}
 }

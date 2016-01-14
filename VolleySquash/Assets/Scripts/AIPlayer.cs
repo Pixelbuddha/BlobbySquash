@@ -30,6 +30,7 @@ public class AIPlayer : Controller {
 		}
 
 		else {
+			if (Game.instance.ball.applyGravity == false) { playPosition = Game.instance.ball.transform.position - (Vector3.forward * 3); }
 			if (ballPath == null) { playPosition = CalcPlayPosition(); _dashTime = 0; }
 			if (playPosition != Vector4.zero) {
 				var direction = (Vector3)playPosition - this.transform.position;
@@ -111,8 +112,8 @@ public class AIPlayer : Controller {
 				//Debug.Log(tarPos.w + " = " + ballSpeed + "Time: " + Time.time + "i: " + i);
 			}
 		}
-
-
+		
+		//ballPath = new List<Vector4>();
 		return tarPos;
 	}
 
