@@ -41,7 +41,7 @@ public class Ball : PhysicsObject {
 		//Debug.Log(state.velocity);
 		Game.instance.BallCollide(collider);
 		if (PhysicsManager.simulatedPhysic && collider.GetType() == typeof(PhysicsPlane)) {
-			if (collider.name == "WallLeft" || collider.name == "WallRight") { return; }
+			if (collider.name == "WallLeft" || collider.name == "WallRight" || collider.name == "WallUp") { return; }
 			foreach (var obj in Object.FindObjectsOfType<AIPlayer>()) {
 
 				obj.ballCollisions++;
